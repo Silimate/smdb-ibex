@@ -135,6 +135,7 @@
       - >-
         <DSIM>
           -sv
+          -sv_compat
           -work <tb_dir>
           -genimage image
           -timescale 1ns/1ps
@@ -173,7 +174,7 @@
           -l <rtl_sim_log>
           <sim_opts> <wave_opts>
     wave_opts: >
-      -waves waves.vcd
+      -waves <test_dir>/waves.vcd
 
 ############################################################
 - tool: riviera
