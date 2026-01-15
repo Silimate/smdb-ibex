@@ -135,7 +135,6 @@
       - >-
         <DSIM>
           -sv
-          -sv_compat
           -work <tb_dir>
           -genimage image
           -timescale 1ns/1ps
