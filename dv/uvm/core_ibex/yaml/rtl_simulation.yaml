@@ -143,7 +143,7 @@
           +define+UVM
           +define+DSIM
           +define+UVM_REGEX_NO_DPI
-          +acc+rwb
+          +acc+rwbW
           -f <core_ibex>/ibex_dv_defines.f
           -f <core_ibex>/ibex_dv.f
           -l <tb_build_log>
@@ -163,7 +163,7 @@
         <DSIM>
           -sv_seed <seed>
           -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so
-          +acc+rwb
+          +acc+rwbW
           -image image
           -work <tb_dir>
           +UVM_TESTNAME=<rtl_test>
