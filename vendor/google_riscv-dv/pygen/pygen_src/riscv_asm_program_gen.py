@@ -110,8 +110,9 @@ class riscv_asm_program_gen:
                                                 min_insert_cnt=1,
                                                 instr_stream=self.main_program[hart].directed_instr)
             self.main_program[hart].gen_instr(is_main_program=1, no_branch=cfg.no_branch_jump)
-            # Setup jump instruction among main program and sub programs
-            self.gen_callstack(self.main_program[hart], self.sub_program[hart],
+            # Setup jump instruction among main program and sub programs.
+            # gen_sub_program rewrites self.sub_program to a flat list of sequences.
+            self.gen_callstack(self.main_program[hart], self.sub_program,
                                sub_program_name, cfg.num_of_sub_program)
             self.main_program[hart].post_process_instr()
             logging.info("Post-processing main program...done")
@@ -229,19 +230,20 @@ class riscv_asm_program_gen:
                       sub_program_name, num_sub_program):
         if num_sub_program != 0:
             callstack_gen = riscv_callstack_gen()
-            self.callstack_gen.init(num_sub_program + 1)
+            callstack_gen.init(num_sub_program + 1)
+            logging.info("Randomizing call stack")
             if callstack_gen.randomize():
                 idx = 0
                 # Insert the jump instruction based on the call stack
                 for i in range(len(callstack_gen.program_h)):
-                    for j in range(len(callstack_gen.program_h.sub_program_id)):
+                    for j in range(len(callstack_gen.program_h[i].sub_program_id)):
                         idx += 1
-                        pid = callstack_gen.program_id[i].sub_program_id[j] - 1
-                        logging.info("Gen jump instr %0s -> sub[%0d] %0d", i, j, pid + 1)
-                        if(i == 0):
-                            self.main_program[i].insert_jump_instr(sub_program_name[pid], idx)
+                        pid = callstack_gen.program_h[i].sub_program_id[j] - 1
+                        logging.info("Gen jump instr %0d -> sub[%0d] %0d", i, j, pid + 1)
+                        if i == 0:
+                            main_program.insert_jump_instr(sub_program_name[pid], idx)
                         else:
-                            self.sub_program[i - 1].insert_jump_instr(sub_program_name[pid], idx)
+                            sub_program[i - 1].insert_jump_instr(sub_program_name[pid], idx)
             else:
                 logging.critical("Failed to generate callstack")
                 sys.exit(1)
@@ -412,8 +414,7 @@ class riscv_asm_program_gen:
             if cfg.signature_addr != 0xdeadbeef:
                 self.gen_signature_handshake(instr, signature_type_t.CORE_STATUS,
                                              core_status_t.INITIALIZED)
-                self.format_section(instr)
-                self.instr_stream.append(instr)
+                self.gen_section("", instr)
             else:
                 logging.critical("The signature_addr is not properly configured!")
                 sys.exit(1)
@@ -1070,7 +1071,7 @@ class riscv_asm_program_gen:
                                 csr=privileged_reg_t.MSCRATCH,
                                 addr_label = ""):
         if cfg.require_signature_addr:
-            instr.extend(("li x{}, {}".format(cfg.gpr[1], hex(cfg.signature_addr))))
+            instr.append("li x{}, {}".format(cfg.gpr[1], hex(cfg.signature_addr)))
             # A single data word is written to the signature address.
             # Bits [7:0] contain the signature_type of CORE_STATUS, and the upper
             # XLEN-8 bits contain the core_status_t data.
@@ -1083,7 +1084,7 @@ class riscv_asm_program_gen:
             # A single data word is written to the signature address.
             # Bits [7:0] contain the signature_type of TEST_RESULT, and the upper
             # XLEN-8 bits contain the test_result_t data.
-            elif signature_type == test_result_t.TEST_RESULT:
+            elif signature_type == signature_type_t.TEST_RESULT:
                 instr.extend(("li x{}, {}".format(cfg.gpr[0], hex(test_result)),
                               "slli x{}, x{}, 8".format(cfg.gpr[0], cfg.gpr[0]),
                               "addi x{}, x{}, {}".format(cfg.gpr[0], cfg.gpr[0],

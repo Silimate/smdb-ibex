@@ -1,0 +1,13 @@
+diff --git a/riscv/decode.h b/riscv/decode.h
+index a42cd48..958dce0 100644
+--- a/riscv/decode.h
++++ b/riscv/decode.h
+@@ -164,7 +164,7 @@ public:
+     if (rlist >= 4)
+       mask |= 1U << X_RA;
+ 
+-    for (uint i = 5; i <= rlist; i++)
++    for (unsigned i = 5; i <= rlist; i++)
+         mask |= 1U << Sn(i - 5);
+ 
+     if (rlist == 15)

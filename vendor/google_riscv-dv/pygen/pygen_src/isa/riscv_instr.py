@@ -15,10 +15,9 @@ import copy
 import sys
 import random
 import vsc
-from imp import reload
 from collections import defaultdict
 from bitstring import BitArray
-from importlib import import_module
+from importlib import import_module, reload
 from pygen_src.riscv_instr_pkg import (pkg_ins, riscv_instr_category_t, riscv_reg_t,
                                        riscv_instr_name_t, riscv_instr_format_t,
                                        riscv_instr_group_t, imm_t)

@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Minimal testlist for the Verilator riscv-dv TB (pyflow generation).
+
+- test: riscv_rand_instr_test
+  description: >
+    Random instruction stress test (Ibex Verilator TB)
+  iterations: 1
+  gen_test: riscv_ibex_rand_instr_test
+  gen_opts: >
+    --instr_cnt=200
+    --num_of_sub_program=1
+    --require_signature_addr=1
+    --signature_addr=8ffffffc
+  rtl_test: verilator_riscv_dv_tb

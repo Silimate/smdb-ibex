@@ -1,0 +1,21 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+// Expected Ibex UNOPTFLAT warnings (same as simple_system)
+lint_off -rule UNOPTFLAT -file "*/rtl/ibex_id_stage.sv"
+lint_off -rule UNOPTFLAT -file "*/rtl/ibex_controller.sv"
+
+// Expose ISA parameters to C++ for Spike cosim (Verilator 5: on rootp)
+public -module "ibex_riscv_dv_tb" -var "RV32E"
+public -module "ibex_riscv_dv_tb" -var "RV32M"
+public -module "ibex_riscv_dv_tb" -var "RV32B"
+
+// TB bring-up noise
+lint_off -rule UNUSEDPARAM -file "*/ibex_riscv_dv_tb.sv"
+lint_off -rule UNUSEDSIGNAL -file "*/ibex_riscv_dv_tb.sv"
+lint_off -rule UNUSEDSIGNAL -file "*/ibex_riscv_dv_sparse_mem.sv"
+lint_off -rule UNUSEDSIGNAL -file "*/ibex_riscv_dv_scramble_responder.sv"
+lint_off -rule UNUSEDSIGNAL -file "*/ibex_riscv_dv_stimulus.sv"

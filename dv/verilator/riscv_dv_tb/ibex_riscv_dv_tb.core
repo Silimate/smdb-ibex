@@ -1,0 +1,252 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_riscv_dv_tb"
+description: "Non-UVM Verilator TB for riscv-dv programs with Spike cosim (UVM memory map)"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:ibex_top_tracing
+      - lowrisc:dv:cosim_dpi
+      - lowrisc:tool:ibex_cosim_setup_check
+      - "fileset_partner ? (partner:prim_generic:all)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
+    files:
+      - rtl/ibex_riscv_dv_sparse_mem.sv
+      - rtl/ibex_riscv_dv_scramble_responder.sv
+      - stimulus/ibex_riscv_dv_stimulus.sv
+      - rtl/ibex_riscv_dv_tb.sv
+      - rtl/ibex_riscv_dv_cosim_checker.sv
+      - rtl/ibex_riscv_dv_cosim_checker_bind.sv
+    file_type: systemVerilogSource
+
+  files_verilator:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+    files:
+      - cpp/ibex_riscv_dv_tb.cc: { file_type: cppSource }
+      - cpp/ibex_riscv_dv_tb.h: { file_type: cppSource, is_include_file: true }
+      - lint/verilator_waiver.vlt: { file_type: vlt }
+
+  files_verilator_stub:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+    files:
+      - cpp/ibex_riscv_dv_tb_stub.cc: { file_type: cppSource }
+      - lint/verilator_waiver.vlt: { file_type: vlt }
+
+  files_rtl_stub:
+    depend:
+      - lowrisc:ibex:ibex_top_tracing
+      - "fileset_partner ? (partner:prim_generic:all)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
+    files:
+      - rtl/ibex_riscv_dv_sparse_mem.sv
+      - rtl/ibex_riscv_dv_scramble_responder.sv
+      - stimulus/ibex_riscv_dv_stimulus.sv
+      - rtl/ibex_riscv_dv_tb.sv
+      - rtl/ibex_riscv_dv_cosim_checker.sv
+      - rtl/ibex_riscv_dv_cosim_checker_bind.sv
+      - rtl/cosim_dpi.svh: { is_include_file: true }
+    file_type: systemVerilogSource
+
+parameters:
+  RV32E:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enable the E ISA extension (reduced register set) [0/1]"
+
+  RV32M:
+    datatype: str
+    default: ibex_pkg::RV32MFast
+    paramtype: vlogdefine
+    description: "RV32M implementation parameter enum."
+
+  RV32B:
+    datatype: str
+    default: ibex_pkg::RV32BNone
+    paramtype: vlogdefine
+    description: "Bitmanip implementation parameter enum."
+
+  RV32ZC:
+    datatype: str
+    default: ibex_pkg::RV32Zca
+    paramtype: vlogdefine
+    description: "Compressed instructions parameter enum."
+
+  RegFile:
+    datatype: str
+    default: ibex_pkg::RegFileFF
+    paramtype: vlogdefine
+    description: "Register file implementation parameter enum."
+
+  ICache:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable instruction cache"
+
+  ICacheECC:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable ECC protection in instruction cache"
+
+  BranchTargetALU:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables separate branch target ALU"
+
+  WritebackStage:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables third pipeline stage"
+
+  SecureIbex:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables security hardening features [0/1]"
+
+  BranchPredictor:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables static branch prediction"
+
+  DbgTriggerEn:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable support for debug triggers"
+
+  PMPEnable:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable PMP"
+
+  PMPGranularity:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Granularity of NAPOT range"
+
+  PMPNumRegions:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+    description: "Number of PMP regions"
+
+  MHPMCounterNum:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: Number of performance monitor event counters [0/29]
+
+  MHPMCounterWidth:
+    datatype: int
+    paramtype: vlogparam
+    default: 40
+    description: Bit width of performance monitor event counters [32/64]
+
+  ICacheScramble:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enables ICache scrambling feature [0/1]"
+
+  RVFI:
+    datatype: bool
+    paramtype: vlogdefine
+    default: true
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+      - tool_verilator ? (files_verilator)
+    toplevel: ibex_riscv_dv_tb
+    parameters:
+      - RV32E
+      - RV32M
+      - RV32B
+      - RV32ZC
+      - RegFile
+      - ICache
+      - ICacheECC
+      - BranchTargetALU
+      - WritebackStage
+      - SecureIbex
+      - BranchPredictor
+      - DbgTriggerEn
+      - PMPEnable
+      - PMPGranularity
+      - PMPNumRegions
+      - MHPMCounterNum
+      - MHPMCounterWidth
+      - ICacheScramble
+      - RVFI
+
+  sim:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          - '--trace'
+          - '--trace-fst'
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++17 -Wall -DVL_USER_STOP -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_dv_tb -g -I/opt/homebrew/include `pkg-config --cflags riscv-riscv riscv-disasm riscv-fdt`"'
+          - '-LDFLAGS "-pthread -L/opt/homebrew/lib -lelf -llz4 `pkg-config --libs riscv-riscv riscv-disasm riscv-fdt`"'
+          - "-Wall"
+          - "--unroll-count 72"
+
+  # Bring-up target: no Spike required (stub cosim always matches)
+  sim_stub:
+    filesets:
+      - files_rtl_stub
+      - tool_verilator ? (files_verilator_stub)
+    toplevel: ibex_riscv_dv_tb
+    default_tool: verilator
+    parameters:
+      - RV32E
+      - RV32M
+      - RV32B
+      - RV32ZC
+      - RegFile
+      - ICache
+      - ICacheECC
+      - BranchTargetALU
+      - WritebackStage
+      - SecureIbex
+      - BranchPredictor
+      - DbgTriggerEn
+      - PMPEnable
+      - PMPGranularity
+      - PMPNumRegions
+      - MHPMCounterNum
+      - MHPMCounterWidth
+      - ICacheScramble
+      - RVFI
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          # Match sim target tracing so SMDB can consume waves.fst
+          - '--trace'
+          - '--trace-fst'
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++17 -Wall -DVL_USER_STOP -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_dv_tb -g -I/opt/homebrew/include"'
+          - '-LDFLAGS "-pthread -L/opt/homebrew/lib -lelf -llz4"'
+          - "-Wall"
+          - "--unroll-count 72"

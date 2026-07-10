@@ -1,0 +1,38 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ibex-riscv-dv-tb"
+version = "0.0.0"
+description = "Python deps for the non-UVM Verilator riscv-dv testbench (FuseSoC + pyflow)"
+requires-python = ">=3.10"
+
+dependencies = [
+  # FuseSoC / Verilator build orchestration
+  "fusesoc>=2.4.3",
+  "edalize>=0.6.1",
+  "pyyaml>=6.0",
+
+  # riscv-dv pyflow instruction generator
+  "pyvsc>=0.8.8.7162283399",
+  # Prefer a known wheel-friendly pin (see nix/pythonEnv); sdists often fail to build.
+  "PyBoolector==3.2.4.20240823.1",
+  "toposort>=1.10",
+  "pyucis>=0.1.0",
+  "bitstring>=3.1.9",
+  "tabulate>=0.9.0",
+  "pandas>=2.0",
+]
+
+[tool.setuptools]
+# Not an installable package — pyproject.toml only manages dependencies.
+py-modules = []
+
+[tool.uv]
+# PyBoolector is awkward to build from sdist; prefer wheels (see nix/pythonEnv).
+only-binary = ["PyBoolector"]

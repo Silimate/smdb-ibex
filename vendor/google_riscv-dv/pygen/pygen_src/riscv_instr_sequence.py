@@ -20,6 +20,7 @@ from pygen_src.riscv_instr_gen_config import cfg
 from pygen_src.riscv_instr_stream import riscv_rand_instr_stream
 from pygen_src.riscv_illegal_instr import riscv_illegal_instr, illegal_instr_type_e
 from pygen_src.riscv_directed_instr_lib import riscv_pop_stack_instr, riscv_push_stack_instr
+from pygen_src.isa.riscv_instr import riscv_instr
 from pygen_src.riscv_instr_pkg import (pkg_ins, riscv_instr_name_t, riscv_reg_t,
                                        riscv_instr_category_t)
 rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
@@ -205,21 +206,21 @@ class riscv_instr_sequence:
     # The jump routine is implmented with an atomic instruction stream(riscv_jump_instr). Similar
     # to load/store instructions, JALR/JAL instructions also need a proper base address and offset
     # as the jump target.
-    def insert_jump_instr(self):
-        # TODO riscv_jump_instr class implementation
-        """
-        jump_instr = riscv_jump_instr()
-        jump_instr.target_program_label = target_label
-        if(not self.is_main_program):
-            jump_instr.stack_exit_instr = self.instr_stack_exit.pop_stack_instr
-        jump_instr.label = self.label_name
-        jump_instr.idx = idx
-        jump_instr.use_jalr = self.is_main_program
-        jump_instr.randomize()
-        self.instr_stream.insert_instr_stream(jump_instr.instr_list)
-        logging.info("{} -> {}...done".format(jump_instr.jump.instr_name.name, target_label))
-        """
-        pass
+    def insert_jump_instr(self, target_label, idx):
+        """Insert a JAL to target_label (simplified vs full riscv_jump_instr)."""
+        jump = riscv_instr.get_instr(riscv_instr_name_t.JAL)
+        try:
+            with jump.randomize_with():
+                jump.rd == cfg.ra
+        except Exception:
+            jump.rd = cfg.ra
+        jump.imm_str = target_label
+        jump.has_label = 1
+        jump.label = "{}_j{}".format(self.label_name, idx)
+        jump.comment = "jump {} -> {}".format(self.label_name, target_label)
+        jump.atomic = 1
+        self.instr_stream.insert_instr_stream([jump])
+        logging.info("JAL -> {}...done".format(target_label))
 
     # Convert the instruction stream to the string format.
     # Label is attached to the instruction if available, otherwise attach proper space to make
@@ -264,19 +265,19 @@ class riscv_instr_sequence:
         except Exception:
             logging.critical("Cannot randomize ra")
             sys.exit(1)
-        routine_str = prefix + "addi x{} x{} {}".format(ra.get_val(), cfg.ra, rand_lsb)
+        routine_str = prefix + "addi x{}, x{}, {}".format(ra.get_val(), int(cfg.ra), rand_lsb)
         self.instr_string_list.append(routine_str)
         if not cfg.disable_compressed_instr:
             jump_instr.append(riscv_instr_name_t.C_JR)
             if not (riscv_reg_t.RA in cfg.reserved_regs):
                 jump_instr.append(riscv_instr_name_t.C_JALR)
-        i = random.randrange(0, len(jump_instr) - 1)
+        i = random.randrange(0, len(jump_instr))
         if jump_instr[i] == riscv_instr_name_t.C_JALR:
             routine_str = prefix + "c.jalr x{}".format(ra.get_val())
         elif jump_instr[i] == riscv_instr_name_t.C_JR:
             routine_str = prefix + "c.jr x{}".format(ra.get_val())
         elif jump_instr[i] == riscv_instr_name_t.JALR:
-            routine_str = prefix + "jalr x{} x{} 0".format(ra.get_val(), ra.get_val())
+            routine_str = prefix + "jalr x{}, x{}, 0".format(ra.get_val(), ra.get_val())
         else:
             logging.critical("Unsupported jump_instr: {}".format(jump_instr[i]))
             sys.exit(1)
