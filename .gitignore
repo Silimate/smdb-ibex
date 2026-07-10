@@ -22,6 +22,5 @@ __pycache__
 modelsim.ini
 
 # Local Spike cosim builds (install prefix / source checkout; do not commit)
-third_party/spike-cosim/
-third_party/riscv-isa-sim-cosim/
+/third_party/
 
