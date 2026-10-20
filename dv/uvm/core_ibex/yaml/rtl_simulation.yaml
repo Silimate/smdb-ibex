@@ -176,6 +176,56 @@
       -waves <test_dir>/waves.vcd -dump-agg
 
 ############################################################
+# xezim (https://github.com/Silimate/xezim) parses, elaborates and simulates in
+# one call, so "compile" builds the cosim DPI library and writes the argument
+# file (design defines, parameter overrides, UVM, file lists) that "sim" reads.
+#
+# Environment: XEZIM (binary), XEZIM_INCLUDE (directory with xezim's svdpi.h),
+# XEZIM_UVM_DIR (UVM library, see `xezim -uvm`), IBEX_ROOT, PKG_CONFIG_PATH
+# (Spike's riscv-* .pc files), plus the usual RISCV_* toolchain variables.
+- tool: xezim
+  env_var: XEZIM,XEZIM_INCLUDE,IBEX_ROOT,EXTRA_COSIM_CFLAGS
+  compile:
+    cmd:
+      - >-
+        gcc -c -fPIC -O2
+          -I<XEZIM_INCLUDE>
+          -o <tb_dir>/date.o
+          <IBEX_ROOT>/dv/uvm/core_ibex/common/date.c
+      - >-
+        g++ -shared -fPIC -O2 -std=c++17
+          -I<XEZIM_INCLUDE>
+          <ISS_CFLAGS> <EXTRA_COSIM_CFLAGS>
+          -I<IBEX_ROOT>/dv/cosim
+          -o <tb_dir>/xezim_cosim_dpi.so
+          <tb_dir>/date.o
+          <IBEX_ROOT>/dv/uvm/core_ibex/common/ibex_cosim_agent/spike_cosim_dpi.cc
+          <IBEX_ROOT>/dv/cosim/cosim_dpi.cc
+          <IBEX_ROOT>/dv/cosim/spike_cosim.cc
+          <ISS_LDFLAGS> <ISS_LIBS> -lstdc++
+      - >-
+        <core_ibex>/scripts/xezim_write_args.sh
+          <tb_dir>/xezim_args.f
+          <cmp_opts>
+  sim:
+    cmd:
+      - >-
+        <XEZIM>
+          --simulate
+          --compat
+          -f <tb_dir>/xezim_args.f
+          --dpi-lib <tb_dir>/xezim_cosim_dpi.so
+          -sv_seed <seed>
+          +UVM_TESTNAME=<rtl_test>
+          +UVM_VERBOSITY=UVM_LOW
+          +bin=<binary>
+          +ibex_tracer_file_base=<rtl_trace>
+          -l <rtl_sim_log>
+          <sim_opts> <wave_opts>
+    wave_opts: >
+      --fst <test_dir>/waves.fst
+
+############################################################
 - tool: riviera
   env_var: ALDEC_PATH
   compile:
