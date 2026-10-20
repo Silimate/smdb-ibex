@@ -22,7 +22,8 @@ SIM_CFGS = {
     'riviera': (True, True),
     'questa': (True, True),
     'xlm': (True, False),
-    'dsim': (True, False)
+    'dsim': (True, False),
+    'xezim': (True, False)
 }
 
 

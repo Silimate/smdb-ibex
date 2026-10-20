@@ -276,6 +276,12 @@ def main():
         SimOpts('dsim_opts', 'DSim compile',
                 lambda p, v: ['-defparam', p + '=' + v],
                 lambda d, v: ['+define+' + d + '=' + v], '.'),
+        # xezim sets parameters of a module with -g/<module>/<param>=<value>
+        # (module name, not an instance path) and takes string-valued
+        # parameters through defines, like VCS and Riviera.
+        SimOpts('xezim_opts', 'xezim compile',
+                lambda p, v: ['-g/' + p + '=' + v],
+                lambda d, v: ['+define+' + d + '=' + v], '/'),
     ]
 
     argparser = argparse.ArgumentParser(description=(
