@@ -17,11 +17,17 @@ package core_ibex_env_pkg;
   import ibex_cosim_agent_pkg::*;
   import push_pull_agent_pkg::*;
 
+  // Width of the scrambling key interface's device data. Named here, rather than
+  // spelled as an expression of ibex_pkg constants in each type argument, so
+  // that every specialization below gets the same type key in xezim.
+  localparam int unsigned ScramblingKeyDeviceDataWidth =
+      ibex_pkg::SCRAMBLE_NONCE_W + ibex_pkg::SCRAMBLE_KEY_W;
+
   typedef push_pull_agent#(
-    .DeviceDataWidth(ibex_pkg::SCRAMBLE_NONCE_W + ibex_pkg::SCRAMBLE_KEY_W)
+    .DeviceDataWidth(ScramblingKeyDeviceDataWidth)
     ) scrambling_key_agent;
   typedef push_pull_agent_cfg#(
-    .DeviceDataWidth(ibex_pkg::SCRAMBLE_NONCE_W + ibex_pkg::SCRAMBLE_KEY_W)
+    .DeviceDataWidth(ScramblingKeyDeviceDataWidth)
     ) scrambling_key_agent_cfg;
 
   `include "core_ibex_vseqr.sv"

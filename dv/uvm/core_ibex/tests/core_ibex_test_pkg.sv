@@ -41,7 +41,7 @@ package core_ibex_test_pkg;
     } error_type_e;
 
   typedef virtual push_pull_if#(
-    .DeviceDataWidth(ibex_pkg::SCRAMBLE_NONCE_W + ibex_pkg::SCRAMBLE_KEY_W)
+    .DeviceDataWidth(core_ibex_env_pkg::ScramblingKeyDeviceDataWidth)
     ) scrambling_key_vif;
 
   `include "core_ibex_report_server.sv"
