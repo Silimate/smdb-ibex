@@ -120,6 +120,11 @@ $(riscvdv-test-bins): $(TESTS-DIR)/%/test.bin: \
   $(PREBUILT_TESTS_DIR)/%/test.bin $(TESTS-DIR)/%/test.S
 	@echo Using prebuilt binary at $@
 	$(verb)cp -f $< $@
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	scripts/compile_test.py \
+	  --dir-metadata $(METADATA-DIR) \
+	  --test-dot-seed $* \
+	  --prebuilt
 else
 $(riscvdv-test-bins): $(TESTS-DIR)/%/test.bin: \
   $(TESTS-DIR)/%/test.S scripts/compile_test.py
