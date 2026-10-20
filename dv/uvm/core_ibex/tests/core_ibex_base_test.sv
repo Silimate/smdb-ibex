@@ -58,10 +58,10 @@ class core_ibex_base_test extends uvm_test;
     if (!uvm_config_db#(bit)::get(null, "", "RV32E", RV32E)) begin
       `uvm_fatal(`gfn, "Cannot get RV32E parameter")
     end
-    if (!uvm_config_db#(rv32m_e)::get(null, "", "RV32M", RV32M)) begin
+    if (!uvm_config_db#(ibex_pkg::rv32m_e)::get(null, "", "RV32M", RV32M)) begin
       `uvm_fatal(`gfn, "Cannot get RV32M parameter")
     end
-    if (!uvm_config_db#(rv32b_e)::get(null, "", "RV32B", RV32B)) begin
+    if (!uvm_config_db#(ibex_pkg::rv32b_e)::get(null, "", "RV32B", RV32B)) begin
       `uvm_fatal(`gfn, "Cannot get RV32B parameter")
     end
 
