@@ -16,7 +16,12 @@ class mubi_cov #(parameter int Width = 4,
     cp_value: coverpoint value {
       bins true = {ValueTrue};
       bins false = {ValueFalse};
+`ifdef XEZIM
+      // xezim does not parse the bins 'with' clause yet; collect any value not above.
+      bins others[Width] = default;
+`else
       bins others[Width] = {[0:{Width{1'b1}}]} with (!(item inside {ValueTrue, ValueFalse}));
+`endif
     }
   endgroup : mubi_cg
 
@@ -45,8 +50,12 @@ class mubi32_cov extends uvm_object;
     cp_value: coverpoint value {
       bins true = {prim_mubi_pkg::MuBi32True};
       bins false = {prim_mubi_pkg::MuBi32False};
+`ifdef XEZIM
+      bins others[32] = default;
+`else
       bins others[32] = {[0:{32{1'b1}}]} with (!(item inside {prim_mubi_pkg::MuBi32True,
                                                               prim_mubi_pkg::MuBi32False}));
+`endif
     }
   endgroup : mubi_cg
 
