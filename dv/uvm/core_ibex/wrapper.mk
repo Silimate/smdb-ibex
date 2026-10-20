@@ -115,6 +115,12 @@ all-cpp = \
 # We don't explicitly track dependencies on the RISCV toolchain here.
 
 compile_riscvdv_tests: $(riscvdv-test-bins)
+ifdef PREBUILT_TESTS_DIR
+$(riscvdv-test-bins): $(TESTS-DIR)/%/test.bin: \
+  $(PREBUILT_TESTS_DIR)/%/test.bin $(TESTS-DIR)/%/test.S
+	@echo Using prebuilt binary at $@
+	$(verb)cp -f $< $@
+else
 $(riscvdv-test-bins): $(TESTS-DIR)/%/test.bin: \
   $(TESTS-DIR)/%/test.S scripts/compile_test.py
 	@echo Compiling riscvdv test assembly to create binary at $@
@@ -122,6 +128,7 @@ $(riscvdv-test-bins): $(TESTS-DIR)/%/test.bin: \
 	scripts/compile_test.py \
 	  --dir-metadata $(METADATA-DIR) \
 	  --test-dot-seed $*
+endif
 
 # NB. The directed test builder does not (yet) depend on the directed sources
 compile_directed_tests: $(directed-test-bins)
