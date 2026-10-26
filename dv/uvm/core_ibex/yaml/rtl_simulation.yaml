@@ -213,6 +213,7 @@
         <XEZIM>
           --simulate
           --compat
+          --clocking-drive=next-edge
           -f <tb_dir>/xezim_args.f
           --dpi-lib <tb_dir>/xezim_cosim_dpi.so
           -sv_seed <seed>
