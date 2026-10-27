@@ -220,6 +220,7 @@
           +UVM_VERBOSITY=UVM_LOW
           +bin=<binary>
           +ibex_tracer_file_base=<rtl_trace>
+          +cosim_log_file=<iss_cosim_trace>
           -l <rtl_sim_log>
           <sim_opts> <wave_opts>
     wave_opts: >
