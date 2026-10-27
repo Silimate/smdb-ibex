@@ -70,7 +70,10 @@ def reloc_word(simulator: str,
             # DSim build path
             (os.path.join(placeholder_dir, 'dsim'),
              os.path.join(build_dir, 'dsim'))
-        ]
+        ],
+        'xezim': [
+            # xezim parses and simulates in one step; no separate simulator binary.
+        ],
     }
     always_relocs = [
         # The generated test. Since riscv-dv expects to make more than one of
