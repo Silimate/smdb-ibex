@@ -11,7 +11,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
   typedef logic [DataWidth-1:0] mem_data_t;
   typedef logic [MaskWidth-1:0] mem_mask_t;
 
-  logic [7:0] system_memory[logic [AddrWidth-1:0]];
+  logic [7:0] system_memory[mem_addr_t];
 
   `uvm_object_param_utils(mem_model#(AddrWidth, DataWidth))
 
@@ -25,7 +25,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     return system_memory.size();
   endfunction
 
-  function bit [7:0] read_byte(logic [AddrWidth-1:0] addr);
+  function bit [7:0] read_byte(mem_addr_t addr);
     bit [7:0] data;
     if (addr_exists(addr)) begin
       data = system_memory[addr];
@@ -37,19 +37,19 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     return data;
   endfunction
 
-  function void write_byte(logic [AddrWidth-1:0] addr, logic [7:0] data);
+  function void write_byte(mem_addr_t addr, logic [7:0] data);
    `uvm_info(`gfn, $sformatf("Write Mem : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     system_memory[addr] = data;
   endfunction
 
-  function void compare_byte(logic [AddrWidth-1:0] addr, logic [7:0] act_data);
+  function void compare_byte(mem_addr_t addr, logic [7:0] act_data);
    `uvm_info(`gfn, $sformatf("Compare Mem : Addr[0x%0h], Act Data[0x%0h], Exp Data[0x%0h]",
                              addr, act_data, system_memory[addr]), UVM_HIGH)
     `DV_CHECK_CASE_EQ(act_data, system_memory[addr],
                       $sformatf("addr 0x%0h read out mismatch", addr))
   endfunction
 
-  function void write(input logic [AddrWidth-1:0] addr, logic [DataWidth-1:0] data, logic [MaskWidth-1:0] mask = '1);
+  function void write(input mem_addr_t addr, mem_data_t data, mem_mask_t mask = '1);
     bit [7:0] byte_data;
     for (int i = 0; i < DataWidth / 8; i++) begin
       if (mask[0]) begin
@@ -61,8 +61,8 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     end
   endfunction
 
-  function logic [DataWidth-1:0] read(logic [AddrWidth-1:0] addr, logic [MaskWidth-1:0] mask = '1);
-    logic [DataWidth-1:0] data;
+  function mem_data_t read(mem_addr_t addr, mem_mask_t mask = '1);
+    mem_data_t data;
     for (int i = DataWidth / 8 - 1; i >= 0; i--) begin
       data = data << 8;
       if (mask[MaskWidth - 1]) data[7:0] = read_byte(addr + i);
@@ -72,11 +72,11 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     return data;
   endfunction
 
-  function void compare(logic [AddrWidth-1:0] addr, logic [DataWidth-1:0] act_data, logic [MaskWidth-1:0] mask = '1,
+  function void compare(mem_addr_t addr, mem_data_t act_data, mem_mask_t mask = '1,
                         bit compare_exist_addr_only = 1);
     bit [7:0] byte_data;
     for (int i = 0; i < DataWidth / 8; i++) begin
-      logic [AddrWidth-1:0] byte_addr = addr + i;
+      mem_addr_t byte_addr = addr + i;
       byte_data = act_data[7:0];
       if (mask[0]) begin
         if (addr_exists(byte_addr)) begin
@@ -93,7 +93,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     end
   endfunction
 
-  function bit addr_exists(logic [AddrWidth-1:0] addr);
+  function bit addr_exists(mem_addr_t addr);
     return system_memory.exists(addr);
   endfunction
 endclass
