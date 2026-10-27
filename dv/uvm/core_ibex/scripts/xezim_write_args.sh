@@ -28,17 +28,17 @@ core_ibex=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 out_dir=$(dirname "$out")
 mkdir -p "$out_dir"
 
-# Pass the shared file list through, minus entries xezim cannot take:
-#  - .c files: dsim and VCS build them as DPI C code; xezim would parse them as
-#    SystemVerilog. They are compiled into the DPI library instead.
-#  - fcov/: SystemVerilog functional-coverage code (covergroup crosses over
-#    hierarchical references) that xezim does not parse. The testbench binds it
-#    only when DV_FCOV_DISABLE is not defined, and this flow defines it.
+# Pass the shared file list through, minus the .c files: dsim and VCS build
+# them as DPI C code; xezim would parse them as SystemVerilog. They are
+# compiled into the DPI library instead.
 filtered_list="$out_dir/ibex_dv.xezim.f"
-grep -v -e '\.c$' -e '/fcov/' "$core_ibex/ibex_dv.f" > "$filtered_list"
+grep -v -e '\.c$' "$core_ibex/ibex_dv.f" > "$filtered_list"
 
 {
+  # Other simulators elaborate every uninstantiated module as a top; the
+  # fcov bind module is one, and its bind statements apply only if it is.
   echo "-s core_ibex_tb_top"
+  echo "-s core_ibex_fcov_bind"
   echo "-timescale 1ns/1ps"
   if [ -n "${XEZIM_UVM_DIR:-}" ]; then
     echo "-uvm"
@@ -48,8 +48,6 @@ grep -v -e '\.c$' -e '/fcov/' "$core_ibex/ibex_dv.f" > "$filtered_list"
   fi
   echo "+define+UVM"
   echo "+define+XEZIM"
-  echo "+define+INC_ASSERT"
-  echo "+define+DV_FCOV_DISABLE"
   # Compile options: Ibex configuration (-g/... overrides and +define+...) and
   # the fixed DM_ADDR/BOOT_ADDR defines from compile_tb.py.
   for opt in "$@"; do
