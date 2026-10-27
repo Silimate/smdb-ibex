@@ -12,7 +12,7 @@ XEZIM="${XEZIM:-${XEZIM_BIN:-}}"
 : "${XEZIM:?set XEZIM}"
 : "${XEZIM_INCLUDE:?set XEZIM_INCLUDE}"
 
-script_dir="$(dirname "$0")"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 out_base="${XEZIM_SSCOSIM_OUT:-$ibex_root/build/xezim/simple_system_cosim}"
 run="$out_base/runs/${cfg}_${prog}"
 log="$out_base/logs/${cfg}_${prog}.log"

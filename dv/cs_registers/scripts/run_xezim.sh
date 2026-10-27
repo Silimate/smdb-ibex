@@ -2,7 +2,8 @@
 # Run tb_cs_registers with xezim (no Verilator main).
 set -euo pipefail
 
-ibex_root="${IBEX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ibex_root="${IBEX_ROOT:-$(cd "$script_dir/../../.." && pwd)}"
 XEZIM="${XEZIM:-${XEZIM_BIN:-}}"
 : "${XEZIM:?set XEZIM to the xezim binary}"
 : "${XEZIM_INCLUDE:?set XEZIM_INCLUDE}"
@@ -15,8 +16,8 @@ log="$run_dir/sim.log"
 export IBEX_ROOT="$ibex_root"
 export PRJ_DIR="$ibex_root"
 export LOWRISC_IP_DIR="$ibex_root/vendor/lowrisc_ip"
-"$(dirname "$0")/gen_xezim_args.sh" "$args_f"
-"$(dirname "$0")/build_dpi.sh"
+"$script_dir/gen_xezim_args.sh" "$args_f"
+"$script_dir/build_dpi.sh"
 
 mkdir -p "$run_dir"
 cd "$run_dir"
@@ -39,4 +40,4 @@ else
     "${run[@]}" >"$log" 2>&1
 fi
 
-python3 "$(dirname "$0")/result_xezim.py" "$log" | tee "$run_dir/result.txt"
+python3 "$script_dir/result_xezim.py" "$log" | tee "$run_dir/result.txt"
