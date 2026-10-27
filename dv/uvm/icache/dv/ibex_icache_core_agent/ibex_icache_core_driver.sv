@@ -31,6 +31,11 @@ class ibex_icache_core_driver
       seq_item_port.get_next_item(req);
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
 
+      // An item can arrive between clocking events (dut_init ends with #1ps). A drive made there
+      // acts at the next clocking event (IEEE 1800-2017 14.16), so the branch pulse in branch_to
+      // would land on the same negedge as its release. Start each item on a clocking event.
+      if ($realtime != cfg.vif.driver_cb_time) @(cfg.vif.driver_cb);
+
       rsp = ibex_icache_core_rsp_item::type_id::create("rsp");
       rsp.set_id_info(req);
 

@@ -47,6 +47,10 @@ interface ibex_icache_core_if (input clk, input rst_n);
     output invalidate;
   endclocking
 
+  // Time of the last driver_cb event, so the driver can tell whether it is on a clocking event
+  realtime driver_cb_time = -1;
+  always @(driver_cb) driver_cb_time = $realtime;
+
   // A clocking block for test code that needs to monitor the interface
   clocking monitor_cb @(posedge clk);
     input  req;
