@@ -183,12 +183,7 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
       exp_alert = read_data("u_ibex_core.instr_valid_id");
 
       // Schedule a simulation step so the DUT can react.
-`ifdef XEZIM
-      // xezim does not accept the 1step time literal outside a clocking block.
-      #1ps;
-`else
       #1step;
-`endif
 
       // Check if the major alert matches our expectation.
       alert_major_internal = read_data("alert_major_internal_o");
