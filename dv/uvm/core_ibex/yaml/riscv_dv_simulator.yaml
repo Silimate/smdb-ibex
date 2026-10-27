@@ -1,6 +1,6 @@
 # xezim entry for google_riscv-dv instruction generation (not in upstream simulator.yaml).
 - tool: xezim
-  env_var: XEZIM,XEZIM_UVM_DIR,IBEX_GEN_SETTING,IBEX_GEN_USER_EXT
+  env_var: XEZIM,XEZIM_UVM_DIR,IBEX_GEN_SETTING,IBEX_GEN_USER_EXT,RISCV_DV_ROOT
   compile:
     cmd:
       - "mkdir -p <out>"

@@ -41,6 +41,7 @@ args_file="$out/xezim_args.f"
 run_dir="$out/runs/$name"
 log="$out/logs/$name.log"
 mkdir -p "$run_dir" "$out/logs" "$out/cache/$name"
+cd "$run_dir"
 
 "$xezim" --simulate --compat --max-time 20ms \
   -f "$args_file" -sv_seed "$seed" \
