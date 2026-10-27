@@ -657,6 +657,10 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
 
     `DV_FCOV_EXPR_SEEN(dmem_req_gnt_rvalid, data_rvalid_i & data_req_o & data_gnt_i)
 
+    cp_instr_fetch_err_i: coverpoint id_stage_i.instr_fetch_err_i;
+    cp_instr_fetch_err_plus2_i: coverpoint id_stage_i.instr_fetch_err_plus2_i;
+    cp_mstatus_mie: coverpoint cs_registers_i.mstatus_q.mie;
+
     misaligned_data_bus_err_cross: cross cp_misaligned_first_data_bus_err,
                                          cp_misaligned_second_data_bus_err {
       // Cannot see both bus errors together as they're signalled at different states of the load
@@ -665,11 +669,11 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
         binsof(cp_misaligned_second_data_bus_err) intersect {1'b1};
     }
 
-    misaligned_insn_bus_err_cross: cross id_stage_i.instr_fetch_err_i,
-                                         id_stage_i.instr_fetch_err_plus2_i;
+    misaligned_insn_bus_err_cross: cross cp_instr_fetch_err_i,
+                                         cp_instr_fetch_err_plus2_i;
 
     // Include both mstatus.mie enabled/disabled because it should not affect wakeup condition
-    irq_wfi_cross: cross cp_controller_fsm_sleep, cs_registers_i.mstatus_q.mie iff
+    irq_wfi_cross: cross cp_controller_fsm_sleep, cp_mstatus_mie iff
                          (id_stage_i.irq_pending_i | id_stage_i.irq_nm_i);
 
     debug_wfi_cross: cross cp_controller_fsm_sleep, cp_all_debug_req iff
@@ -683,10 +687,10 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
         binsof(cp_priv_mode_id) intersect {PRIV_LVL_U};
     }
 
-    priv_mode_irq_cross: cross cp_priv_mode_id, cp_interrupt_taken, cs_registers_i.mstatus_q.mie {
+    priv_mode_irq_cross: cross cp_priv_mode_id, cp_interrupt_taken, cp_mstatus_mie {
       // No interrupt would be taken in M-mode when its mstatus.MIE = 0 unless it's an NMI
       illegal_bins mmode_mstatus_mie =
-        binsof(cs_registers_i.mstatus_q.mie) intersect {1'b0} &&
+        binsof(cp_mstatus_mie) intersect {1'b0} &&
         binsof(cp_priv_mode_id) intersect {PRIV_LVL_M} with (cp_interrupt_taken >> 4 == 6'd0);
     }
 
