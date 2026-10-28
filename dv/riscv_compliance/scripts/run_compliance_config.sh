@@ -51,8 +51,15 @@ rm -rf work
 mkdir -p "$logd/work"
 ln -sfn "$logd/work" work
 
+default_isas=(rv32i rv32im rv32imc rv32Zicsr rv32Zifencei)
+if [[ -n "${COMPLIANCE_ISA_LIST:-}" ]]; then
+  read -r -a isas <<< "$COMPLIANCE_ISA_LIST"
+else
+  isas=("${default_isas[@]}")
+fi
+
 fail=0
-for isa in rv32i rv32im rv32imc rv32Zicsr rv32Zifencei; do
+for isa in "${isas[@]}"; do
   isa_log="$logd/isa_${isa}.log"
   echo "=== config=$cfg isa=$isa ===" | tee "$isa_log"
   set +e
