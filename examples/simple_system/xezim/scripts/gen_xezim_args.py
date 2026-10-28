@@ -92,11 +92,9 @@ def main() -> None:
         line = raw.strip()
         if not line or line.startswith(("--", "-CFLAGS", "-Mdir", "-cc")):
             continue
+        # The .vc is reused across configs, so its -G values belong to whichever
+        # config ran the fusesoc setup; the parameters above come from this one.
         if line.startswith("-G"):
-            param = line[2:]
-            if "=" in param:
-                k, v = param.split("=", 1)
-                lines_out.append(f"-g/ibex_simple_system/{k}={v}")
             continue
         if line.startswith("+incdir+"):
             rel = line[len("+incdir+") :]
