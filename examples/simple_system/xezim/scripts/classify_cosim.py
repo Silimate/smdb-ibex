@@ -16,7 +16,9 @@ asserts: Counter[str] = Counter()
 first_assert = ""
 for line in log.splitlines():
     if "Assertion failed" in line or "[ASSERT FAILED]" in line:
-        m = re.search(r"(\w+)(?:\s|$)", line.split(":")[-1] if ":" in line else line)
+        m = re.search(r"\[ASSERT FAILED\]\s+(\w+)", line) or re.search(
+            r"(\w+)(?:\s|$)", line.split(":")[-1] if ":" in line else line
+        )
         key = m.group(1) if m else line.strip()[:40]
         asserts[key] += 1
         if not first_assert:
@@ -36,10 +38,15 @@ sim_rc = int(exit_rc)
 
 if sim_rc != 0 or cosim_fail:
     result = "FAIL"
-    first_err = first_assert or next(
-        (ln.strip() for ln in log.splitlines() if "Co-simulation mismatch" in ln),
-        f"exit={sim_rc}",
+    log_lines = log.splitlines()
+    mismatch_at = next(
+        (i for i, ln in enumerate(log_lines) if "FAILURE: Co-simulation mismatch" in ln),
+        None,
     )
+    if mismatch_at is not None:
+        first_err = " | ".join(ln.strip() for ln in log_lines[mismatch_at : mismatch_at + 2])
+    else:
+        first_err = first_assert or f"exit={sim_rc}"
 elif uart_failure:
     result = "FAIL"
     first_err = next((ln for ln in uart.splitlines() if "FAILURE" in ln), "FAILURE in uart log")
