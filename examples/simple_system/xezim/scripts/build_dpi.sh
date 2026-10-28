@@ -15,13 +15,17 @@ CFLAGS=$(pkg-config --cflags riscv-riscv riscv-disasm riscv-fdt riscv-fesvr)
 LIBS=$(pkg-config --libs riscv-riscv riscv-disasm riscv-fdt riscv-fesvr)
 
 mkdir -p "$(dirname "$out")"
+# The linker rewrites its output in place, which corrupts the library under any
+# simulation that has it loaded; link to a temporary name and rename it.
+tmp="$out.$$.tmp"
 g++ -shared -fPIC -O2 -std=c++17 \
   -I"$XEZIM_INCLUDE" -I"$ibex_root/dv/cosim" \
   $CFLAGS \
-  -o "$out" \
+  -o "$tmp" \
   "$ibex_root/dv/cosim/cosim_dpi.cc" \
   "$ibex_root/dv/cosim/spike_cosim.cc" \
   "$ibex_root/examples/simple_system/xezim/simple_system_cosim_dpi.cc" \
   -Wl,--no-as-needed $LIBS -lstdc++ -Wl,--as-needed
+mv -f "$tmp" "$out"
 
 echo "Wrote $out"

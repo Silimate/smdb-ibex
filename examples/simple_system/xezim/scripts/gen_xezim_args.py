@@ -118,7 +118,9 @@ def main() -> None:
     out_dir = ibex / "build/xezim/simple_system_cosim/args"
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / f"{config}.f"
-    out.write_text("\n".join(lines_out) + "\n")
+    tmp = out.with_name(f"{out.name}.{os.getpid()}.tmp")
+    tmp.write_text("\n".join(lines_out) + "\n")
+    os.replace(tmp, out)
     print(f"wrote {out}")
 
 
