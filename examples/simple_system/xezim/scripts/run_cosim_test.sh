@@ -25,7 +25,8 @@ vmem="${SSCOSIM_VMEM:-}"
 if [[ -z "$vmem" ]]; then
   for candidate in \
     "$ibex_root/examples/sw/simple_system/${prog%.vmem}/${prog}.vmem" \
-    "$ibex_root/examples/sw/simple_system/${prog}/${prog}.vmem"; do
+    "$ibex_root/examples/sw/simple_system/${prog}/${prog}.vmem" \
+    "$ibex_root/examples/sw/benchmarks/${prog}/${prog}.vmem"; do
     if [[ -f "$candidate" ]]; then
       vmem="$candidate"
       break

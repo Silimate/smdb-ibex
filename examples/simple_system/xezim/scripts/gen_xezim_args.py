@@ -92,11 +92,9 @@ def main() -> None:
         line = raw.strip()
         if not line or line.startswith(("--", "-CFLAGS", "-Mdir", "-cc")):
             continue
+        # The .vc is reused across configs, so its -G values belong to whichever
+        # config ran the fusesoc setup; the parameters above come from this one.
         if line.startswith("-G"):
-            param = line[2:]
-            if "=" in param:
-                k, v = param.split("=", 1)
-                lines_out.append(f"-g/ibex_simple_system/{k}={v}")
             continue
         if line.startswith("+incdir+"):
             rel = line[len("+incdir+") :]
@@ -120,7 +118,9 @@ def main() -> None:
     out_dir = ibex / "build/xezim/simple_system_cosim/args"
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / f"{config}.f"
-    out.write_text("\n".join(lines_out) + "\n")
+    tmp = out.with_name(f"{out.name}.{os.getpid()}.tmp")
+    tmp.write_text("\n".join(lines_out) + "\n")
+    os.replace(tmp, out)
     print(f"wrote {out}")
 
 

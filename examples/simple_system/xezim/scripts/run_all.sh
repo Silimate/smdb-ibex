@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 # CI-style simple-system cosim matrix (six configs).
+#
+# Build CoreMark the way ci.yml does for cosim:
+#   make -C examples/sw/benchmarks/coremark SUPPRESS_PCOUNT_DUMP=1
+# Spike's counters do not follow Ibex's, so the default build's counter dump
+# mismatches at its first minstret read.
 set -euo pipefail
 
 ibex_root="${IBEX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)}"
