@@ -55,28 +55,7 @@ runs:
 
         # Run compliance test suite
         export TARGET_SIM=$PWD/build/lowrisc_ibex_ibex_riscv_compliance_0.1/sim-verilator/Vibex_riscv_compliance
-        export RISCV_PREFIX=riscv32-unknown-elf-
-        export RISCV_TARGET=ibex
-        export RISCV_DEVICE=rv32imc
-        fail=0
-        for isa in rv32i rv32im rv32imc rv32Zicsr rv32Zifencei; do
-          make -C build/riscv-compliance RISCV_ISA=$isa 2>&1 | tee run.log
-          if [ ${PIPESTATUS[0]} != 0 ]; then
-            echo -n "::error::"
-            echo "The RISC-V compliance test suite failed for $isa"
-
-            # There's no easy way to get the test results in machine-readable
-            # form to properly exclude known-failing tests. Going with an
-            # approximate solution for now.
-            if [ $isa == rv32i ] && grep -q 'FAIL: 4/48' run.log; then
-              echo -n "::error::"
-              echo "Expected failure for rv32i, see lowrisc/ibex#100 more more information."
-            else
-              fail=1
-            fi
-          fi
-        done
-        exit $fail
+        ./ci/run-riscv-compliance.sh build/riscv-compliance
 
     - name: Run Verilator co-sim tests for for ${{ inputs.ibex_config }}
       shell: bash
@@ -86,17 +65,4 @@ runs:
         fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system_cosim $IBEX_CONFIG_OPTS
 
         # Run directed tests against simple system co-simulation
-        ./ci/run-cosim-test.sh --skip-pass-check CoreMark examples/sw/benchmarks/coremark/coremark.elf
-
-        if ./util/ibex_config.py ${{ inputs.ibex_config }} query_fields PMPEnable | grep -q 'PMPEnable=1'; then
-          ./ci/run-cosim-test.sh --skip-pass-check pmp_smoke examples/sw/simple_system/pmp_smoke_test/pmp_smoke_test.elf
-        else
-          echo "PMP not supported on ${{ inputs.ibex_config }}, skipping pmp_smoke_test"
-        fi
-
-        if ./util/ibex_config.py ${{ inputs.ibex_config }} query_fields SecureIbex | grep -q 'SecureIbex=1'; then
-          ./ci/run-cosim-test.sh dit_test examples/sw/simple_system/dit_test/dit_test.elf
-          ./ci/run-cosim-test.sh dummy_instr_test examples/sw/simple_system/dummy_instr_test/dummy_instr_test.elf
-        else
-          echo "Security features not supported on ${{ inputs.ibex_config }}, skipping security feature tests"
-        fi
+        ./ci/run-cosim-tests.sh ${{ inputs.ibex_config }}
