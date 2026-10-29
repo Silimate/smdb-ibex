@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ibex_root="${IBEX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)}"
+ibex_root="${IBEX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)}"
 out="$ibex_root/build/xezim/simple_system_cosim/simple_system_cosim_dpi.so"
 
 : "${XEZIM_INCLUDE:?set XEZIM_INCLUDE}"

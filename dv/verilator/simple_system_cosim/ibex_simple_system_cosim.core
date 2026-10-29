@@ -169,6 +169,9 @@ targets:
         vcs_options:
           - '-xlrm uniq_prior_final'
           - '-debug_access+r'
+      xezim:
+        xezim_options:
+          - '-timescale 1ns/1ps'
       verilator:
         mode: cc
         verilator_options:
