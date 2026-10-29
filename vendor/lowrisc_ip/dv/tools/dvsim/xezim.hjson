@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: Apache-2.0
+{
+  // The build elaborates the design into a compiled artifact; each test runs
+  // that artifact. Set XEZIM to the xezim binary and XEZIM_UVM_DIR to UVM.
+  build_cmd:  "{job_prefix} {XEZIM}"
+  run_cmd:    "{job_prefix} {XEZIM}"
+  xezim_artifact: "{build_dir}/xezim.art"
+
+  build_opts: ["--compile",
+               "--compat",
+               "-o {xezim_artifact}",
+               "-uvm",
+               "-timescale {timescale}",
+               "-f {sv_flist}",
+               // List multiple tops for the simulation. Prepend each top level with `-s`.
+               "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-s \\1/g'"]
+
+  run_opts:   ["{xezim_artifact}",
+               "--compat",
+               "-sv_seed {seed}",
+               "+UVM_TESTNAME={uvm_test}",
+               "+UVM_TEST_SEQ={uvm_test_seq}"]
+
+  // The fusesoc xezim backend writes a .f without the C/C++ sources.
+  sv_flist_gen_flags: ["--tool=xezim"]
+  overrides: [
+    {
+      name: sv_flist
+      value: "{sv_flist_gen_dir}/{fusesoc_core_}.f"
+    }
+  ]
+  exports: [
+    { PYTHONPATH: "{proj_root}/dv/xezim/python" }
+  ]
+
+  supported_wave_formats: ["fst", "vcd"]
+  run_script: ""
+
+  // Coverage collection is not wired up; dvsim requires these paths anyway.
+  cov_db_dir: "{scratch_path}/coverage/{build_mode}"
+  cov_db_test_dir: "{cov_db_dir}/{run_dir_name}.{seed}"
+
+  build_fail_patterns: ["^\\S+:\\d+:\\d+: error: "]
+  run_fail_patterns:   ["^\\*\\* (Error|Fatal): "]
+
+  // common_modes.hjson enables {tool}_<mode> for these sim modes.
+  build_modes: [
+    {
+      name: xezim_waves
+      is_sim_mode: 1
+      build_opts: ["--wave"]
+      run_opts: ["--fst waves.fst"]
+    }
+    {
+      name: xezim_profile
+      is_sim_mode: 1
+      run_opts: ["--profile"]
+    }
+    { name: "xezim_gui", is_sim_mode: 1 }
+    { name: "xezim_gui_debug", is_sim_mode: 1 }
+    { name: "xezim_waves_off", is_sim_mode: 1 }
+    { name: "xezim_cov", is_sim_mode: 1 }
+    { name: "xezim_xprop", is_sim_mode: 1 }
+    { name: "xezim_loopdetect", is_sim_mode: 1 }
+    { name: "xezim_memutil_dpi_scrambled_build_opts" }
+  ]
+}
