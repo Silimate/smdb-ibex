@@ -58,9 +58,17 @@ class ibex_icache_core_req_item extends uvm_sequence_item;
     // sensitivity). If we aren't starting an invalidation, we mustn't pick a new seed if the cache
     // is enabled (because that could cause multi-way hits). If the cache isn't enabled, pick a new
     // seed sometimes.
-    (enable && !invalidate) -> new_seed == 0;
-    invalidate -> new_seed dist { 0 :/ 1, [1:32'hffffffff] :/ 1000 };
-    (!enable && !invalidate) -> new_seed dist { 0 :/ 1, [1:32'hffffffff] :/ 1 };
+    //
+    // Pick invalidate and enable first, so the single legal seed of an enabled cache doesn't make
+    // that case less likely than the others.
+    solve invalidate, enable before new_seed;
+    if (invalidate) {
+      new_seed dist { 0 :/ 1, [1:32'hffffffff] :/ 1000 };
+    } else if (enable) {
+      new_seed == 0;
+    } else {
+      new_seed dist { 0 :/ 1, [1:32'hffffffff] :/ 1 };
+    }
   }
 
   `uvm_object_utils_begin(ibex_icache_core_req_item)
