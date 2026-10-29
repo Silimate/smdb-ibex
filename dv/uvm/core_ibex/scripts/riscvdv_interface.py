@@ -24,7 +24,7 @@ from typeguard import typechecked
 from metadata import RegressionMetadata
 
 # ibex
-from setup_imports import _RISCV_DV, _CORE_IBEX_RISCV_DV_EXTENSION
+from setup_imports import _RISCV_DV, _CORE_IBEX_RISCV_DV_EXTENSION, _CORE_IBEX_YAML
 from scripts_lib import subst_dict, subst_env_vars
 
 # riscv-dv
@@ -38,7 +38,7 @@ parameter_regex = r'(<[\w]+>)'  # Find matches to the above format
 
 
 @typechecked
-def get_run_cmd(verbose: bool) -> List[Union[str, pathlib.Path]]:
+def get_run_cmd(verbose: bool, simulator: str = '') -> List[Union[str, pathlib.Path]]:
     """Return the command parts of a call to riscv-dv's run.py."""
     riscvdv_run_py = _RISCV_DV/'run.py'
     csr_desc = _CORE_IBEX_RISCV_DV_EXTENSION/'csr_description.yaml'
@@ -49,9 +49,10 @@ def get_run_cmd(verbose: bool) -> List[Union[str, pathlib.Path]]:
            '--testlist', testlist,
            '--gcc_opts=-mno-strict-align',
            '--custom_target', _CORE_IBEX_RISCV_DV_EXTENSION,
-           # '--simulator_yaml', _CORE_IBEX_YAML/'rtl_simulation.yaml',
            '--csr_yaml', csr_desc,
            '--mabi=ilp32']
+    if simulator == 'xezim':
+        cmd.extend(['--simulator_yaml', _CORE_IBEX_YAML/'riscv_dv_simulator.yaml'])
     if verbose:
         cmd.append('--verbose')
 

@@ -82,7 +82,22 @@ module tb_cs_registers #(
     .csr_op_i           (csr_op_i),
     .csr_op_en_i        (csr_op_en_i),
     .csr_rdata_o        (csr_rdata_o),
-    .illegal_csr_insn_o (illegal_csr_insn_o)
+    .illegal_csr_insn_o (illegal_csr_insn_o),
+    // Inputs the testbench does not drive. Verilator reads an unconnected
+    // input as 0; four-state simulators read z, so tie them to 0 explicitly.
+    .hart_id_i ('0), .csr_mtvec_init_i ('0), .boot_addr_i ('0),
+    .irq_software_i ('0), .irq_timer_i ('0), .irq_external_i ('0), .irq_fast_i ('0),
+    .nmi_mode_i ('0), .debug_mode_i ('0), .debug_mode_entering_i ('0),
+    .debug_cause_i (ibex_pkg::DBG_CAUSE_NONE), .debug_csr_save_i ('0),
+    .pc_if_i ('0), .pc_id_i ('0), .pc_wb_i ('0), .ic_scr_key_valid_i ('0),
+    .csr_save_if_i ('0), .csr_save_id_i ('0), .csr_save_wb_i ('0),
+    .csr_restore_mret_i ('0), .csr_restore_dret_i ('0), .csr_save_cause_i ('0),
+    .csr_mcause_i ('0), .csr_mtval_i ('0),
+    .instr_ret_i ('0), .instr_ret_compressed_i ('0),
+    .instr_ret_spec_i ('0), .instr_ret_compressed_spec_i ('0),
+    .iside_wait_i ('0), .jump_i ('0), .branch_i ('0), .branch_taken_i ('0),
+    .mem_load_i ('0), .mem_store_i ('0), .dside_wait_i ('0),
+    .mul_wait_i ('0), .div_wait_i ('0)
   );
   /* verilator lint_on PINMISSING */
 
@@ -108,6 +123,10 @@ module tb_cs_registers #(
     env_dpi::env_tick(stop_simulation, test_passed);
     rst_dpi::rst_tick("rstn_driver", dpi_rst_ni);
     if (stop_simulation) begin
+`ifndef VERILATOR
+      // The Verilator main returns !test_passed_o; elsewhere, fail the run.
+      if (!test_passed) $error("TEST FAILED");
+`endif
       $finish();
     end
   end

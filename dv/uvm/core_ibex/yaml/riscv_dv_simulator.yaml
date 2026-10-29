@@ -1,0 +1,16 @@
+# xezim entry for google_riscv-dv instruction generation (not in upstream simulator.yaml).
+- tool: xezim
+  env_var: XEZIM,XEZIM_UVM_DIR,IBEX_GEN_SETTING,IBEX_GEN_USER_EXT,RISCV_DV_ROOT
+  compile:
+    cmd:
+      - "mkdir -p <out>"
+  sim:
+    cmd: >-
+      <XEZIM> --simulate --compat -uvm -s riscv_instr_gen_tb_top
+      +define+UVM +define+UVM_REGEX_NO_DPI
+      +incdir+<IBEX_GEN_SETTING>
+      +incdir+<IBEX_GEN_USER_EXT>
+      -f <cwd>/files.f
+      -sv_seed <seed>
+      +UVM_VERBOSITY=UVM_LOW
+      <sim_opts>

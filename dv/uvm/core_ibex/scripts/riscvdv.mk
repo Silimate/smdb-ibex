@@ -74,6 +74,16 @@ $(METADATA-DIR)/instr.gen.build.stamp: \
 #         recipe
 #         …
 
+ifdef PREBUILT_TESTS_DIR
+# Take the stimulus (test.S and test.bin per <test>.<seed> directory) from
+# $(PREBUILT_TESTS_DIR) instead of running the generator. The program does not
+# depend on the RTL, so this separates generator problems from simulator ones.
+$(riscvdv-test-asms): $(TESTS-DIR)/%/$(asm-stem): $(PREBUILT_TESTS_DIR)/%/$(bin-stem)
+	@echo Using prebuilt stimulus for $* from $(PREBUILT_TESTS_DIR)
+	@mkdir -p $(@D)
+	$(verb)if [ -f $(PREBUILT_TESTS_DIR)/$*/$(asm-stem) ]; then \
+	  cp -f $(PREBUILT_TESTS_DIR)/$*/$(asm-stem) $@; else touch $@; fi
+else
 $(riscvdv-test-asms): $(TESTS-DIR)/%/$(asm-stem): \
   $(INSTR-GEN-BUILD-STAMP) $(TESTLIST) scripts/run_instr_gen.py
 	@echo Running randomized test generator to create assembly file $@
@@ -81,4 +91,4 @@ $(riscvdv-test-asms): $(TESTS-DIR)/%/$(asm-stem): \
 	scripts/run_instr_gen.py \
 	  --dir-metadata $(METADATA-DIR) \
 	  --test-dot-seed $*
-
+endif
