@@ -6,7 +6,8 @@
       - "mkdir -p <out>"
   sim:
     cmd: >-
-      <XEZIM> --simulate --compat -uvm -s riscv_instr_gen_tb_top
+      <XEZIM> --simulate --relax-implicit-static --relax-driver-conflicts
+      --error-exit --max-time 10s -uvm -s riscv_instr_gen_tb_top
       +define+UVM +define+UVM_REGEX_NO_DPI
       +incdir+<IBEX_GEN_SETTING>
       +incdir+<IBEX_GEN_USER_EXT>

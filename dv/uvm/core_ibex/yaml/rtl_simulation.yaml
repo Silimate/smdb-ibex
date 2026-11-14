@@ -212,7 +212,10 @@
       - >-
         <XEZIM>
           --simulate
-          --compat
+          --relax-implicit-static
+          --relax-driver-conflicts
+          --error-exit
+          --max-time 10s
           -f <tb_dir>/xezim_args.f
           --dpi-lib <tb_dir>/xezim_cosim_dpi.so
           -sv_seed <seed>

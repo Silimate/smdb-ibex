@@ -23,10 +23,10 @@ MAKEFILE = """\
 XEZIM ?= xezim
 
 all:
-\t$(XEZIM) --compile --compat -o {name}.xezim {tops} -f {name}.f
+\t$(XEZIM) --compile --relax-implicit-static --relax-driver-conflicts -o {name}.xezim {tops} -f {name}.f
 
 run:
-\t$(XEZIM) {name}.xezim --compat {dpi_libs} {run_options} $(EXTRA_OPTIONS)
+\t$(XEZIM) {name}.xezim --error-exit --max-time 10s {dpi_libs} {run_options} $(EXTRA_OPTIONS)
 """
 
 
