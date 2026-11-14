@@ -25,7 +25,8 @@ if [[ -z "$raminit" ]]; then
 fi
 
 # ibex_riscv_compliance has a 10 ns clock outside Verilator.
-exec "$XEZIM" --simulate --compat \
+exec "$XEZIM" --simulate \
+  --relax-implicit-static --relax-driver-conflicts --error-exit \
   --max-time "$((term_cycles * 10))ns" \
   -s ibex_riscv_compliance -f "$XEZIM_ARGS_F" \
   -g/ibex_riscv_compliance/MemInitFile="$raminit" \
