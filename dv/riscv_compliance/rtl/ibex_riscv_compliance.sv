@@ -6,9 +6,9 @@
  * Ibex simulation to run the RISC-V compliance test on
  *
  * This is a toplevel wrapper for Ibex with helpers to run the RISC-V compliance
- * test. It is designed for Verilator, but should equally work for other
- * simulators (if the top-level clk and rst ports are replaced with a generated
- * clock).
+ * test. Under Verilator the C++ main drives the clock and reset and loads the
+ * RAM; other simulators get a generated clock and reset, and load the RAM from
+ * MemInitFile.
  */
 module ibex_riscv_compliance (
   input IO_CLK,
@@ -32,11 +32,24 @@ module ibex_riscv_compliance (
   parameter bit SecureIbex                = 1'b0;
   parameter bit ICacheScramble            = 1'b0;
   parameter bit DbgTriggerEn              = 1'b0;
+  parameter string MemInitFile            = "";
 
   logic clk_sys, rst_sys_n;
 
+`ifdef VERILATOR
   assign clk_sys = IO_CLK;
   assign rst_sys_n = IO_RST_N;
+`else
+  // 10 ns clock. Every flop is X until reset in four-state simulation, so hold
+  // reset from time 0 for 4 cycles.
+  initial clk_sys = 1'b0;
+  always #5 clk_sys = ~clk_sys;
+  initial begin
+    rst_sys_n = 1'b0;
+    repeat (4) @(posedge clk_sys);
+    rst_sys_n = 1'b1;
+  end
+`endif
 
   // Bus hosts, ordered in decreasing priority
   typedef enum logic[1:0] {
@@ -86,6 +99,17 @@ module ibex_riscv_compliance (
   assign cfg_device_addr_mask[Ram] = ~32'(RamSizeWords * 4 - 1);
   assign cfg_device_addr_base[TestUtilDevice] = 32'h20000;
   assign cfg_device_addr_mask[TestUtilDevice] = ~32'h3FF; // 1 kB
+
+  // The RAM has no error output, and the fetch port and the test utility's
+  // host port only read. Verilator reads these undriven signals as 0; drive
+  // them so four-state simulators do not see X.
+  assign device_err[Ram]          = 1'b0;
+  assign host_we[CoreI]           = 1'b0;
+  assign host_be[CoreI]           = '0;
+  assign host_wdata[CoreI]        = '0;
+  assign host_we[TestUtilHost]    = 1'b0;
+  assign host_be[TestUtilHost]    = '0;
+  assign host_wdata[TestUtilHost] = '0;
 
   bus #(
     .NrDevices   (NrDevices),
@@ -218,7 +242,8 @@ module ibex_riscv_compliance (
 
   // SRAM block for instruction and data storage
   ram_1p #(
-      .Depth(RamSizeWords)
+      .Depth(RamSizeWords),
+      .MemInitFile(MemInitFile)
     ) u_ram (
       .clk_i    (clk_sys           ),
       .rst_ni   (rst_sys_n         ),

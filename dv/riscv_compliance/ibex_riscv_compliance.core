@@ -151,6 +151,9 @@ targets:
       - MHPMCounterWidth
     toplevel: ibex_riscv_compliance
     tools:
+      xezim:
+        xezim_options:
+          - '-timescale 1ns/1ps'
       verilator:
         mode: cc
         verilator_options:

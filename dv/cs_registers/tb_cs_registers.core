@@ -109,6 +109,12 @@ targets:
           - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
           - '-debug_access+all'
 
+      xezim:
+        xezim_options:
+          - '-timescale 1ns/1ps'
+        dpi_libs:
+          - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
+
       verilator:
         mode: cc
         libs:
