@@ -154,6 +154,27 @@ class QueryOpts:
 
         return '\n'.join(query_result)
 
+class SpikeIsa:
+    '''The Spike ISA string, built as SimpleSystem::GetIsaString does'''
+    bitmanip = {
+        'ibex_pkg::RV32BNone': '',
+        'ibex_pkg::RV32BBalanced': '_Zba_Zbb_Zbs_XZbf_XZbt',
+        'ibex_pkg::RV32BOTEarlGrey': '_Zba_Zbb_Zbc_Zbs_XZbf_XZbp_XZbr_XZbt',
+        'ibex_pkg::RV32BFull': '_Zba_Zbb_Zbc_Zbs_XZbe_XZbf_XZbp_XZbr_XZbt',
+    }
+
+    def setup_args(self, arg_subparser):
+        output_argparser = arg_subparser.add_parser(
+            'spike_isa', help=('Outputs the ISA string for Spike cosim'))
+        output_argparser.set_defaults(output_fn=self.output)
+
+    def output(self, config, args):
+        params = config.params
+        isa = 'rv32e' if params['RV32E'] else 'rv32i'
+        if params['RV32M'] != 'ibex_pkg::RV32MNone':
+            isa += 'm'
+        return isa + 'c' + self.bitmanip[params['RV32B']]
+
 class SimOpts:
     def __init__(self, cmd_name, description, param_set_fn, define_set_fn,
                  hierarchy_sep):
@@ -255,6 +276,7 @@ def main():
     outputters = [
         FusesocOpts(),
         QueryOpts(),
+        SpikeIsa(),
         SimOpts('vcs_opts', 'VCS compile',
                 lambda p, v: ['-pvalue+' + p + '=' + v],
                 lambda d, v: ['+define+' + d + '=' + v], '.'),
@@ -276,6 +298,12 @@ def main():
         SimOpts('dsim_opts', 'DSim compile',
                 lambda p, v: ['-defparam', p + '=' + v],
                 lambda d, v: ['+define+' + d + '=' + v], '.'),
+        # xezim sets parameters of a module with -g/<module>/<param>=<value>
+        # (module name, not an instance path) and takes string-valued
+        # parameters through defines, like VCS and Riviera.
+        SimOpts('xezim_opts', 'xezim compile',
+                lambda p, v: ['-g/' + p + '=' + v],
+                lambda d, v: ['+define+' + d + '=' + v], '/'),
     ]
 
     argparser = argparse.ArgumentParser(description=(
