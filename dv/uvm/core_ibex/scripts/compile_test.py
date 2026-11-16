@@ -35,7 +35,7 @@ def get_riscvdv_compile_cmds(md: RegressionMetadata, trr: TestRunResult) -> List
         placeholder = td/'@@PLACEHOLDER@@'
         orig_list = td/'orig-cmds.list'
 
-        cmd = (riscvdv_interface.get_run_cmd(bool(md.verbose)) +
+        cmd = (riscvdv_interface.get_run_cmd(bool(md.verbose), md.simulator) +
                ['--verbose',
                 '--output', placeholder,
                 '--steps=gcc_compile',
@@ -178,11 +178,6 @@ def _main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir-metadata', type=pathlib.Path, required=True)
     parser.add_argument('--test-dot-seed', type=read_test_dot_seed, required=True)
-    args = parser.parse_args()
-    tds = args.test_dot_seed
-    md = RegressionMetadata.construct_from_metadata_dir(args.dir_metadata)
-    trr = TestRunResult.construct_from_metadata_dir(args.dir_metadata, f"{tds[0]}.{tds[1]}")
-
     if trr.testtype == TestType.RISCVDV:
         cmds = get_riscvdv_compile_cmds(md, trr)
         trr.compile_asm_log = trr.dir_test/'compile.riscvdv.log'
