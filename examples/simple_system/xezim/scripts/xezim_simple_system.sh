@@ -28,7 +28,7 @@ export SSCOSIM_VMEM="$(realpath "${elf%.elf}.vmem")"
 
 # shellcheck disable=SC2086
 exec "${XEZIM:-xezim}" --simulate \
-  --relax-implicit-static --relax-driver-conflicts --error-exit --max-time 10s \
+  --relax-implicit-static --relax-driver-conflicts --relax-cross-hier-item --error-exit --max-time 10s \
   -s ibex_simple_system -s ibex_simple_system_cosim_checker_bind \
   -f "$XEZIM_ARGS_F" --dpi-lib "$SSCOSIM_DPI" \
   -g/ibex_simple_system/SRAMInitFile="\"$SSCOSIM_VMEM\"" \

@@ -7,7 +7,7 @@
   xezim_artifact: "{build_dir}/xezim.art"
 
   build_opts: ["--compile",
-               "--relax-implicit-static --relax-driver-conflicts",
+               "--relax-implicit-static --relax-driver-conflicts --relax-cross-hier-item",
                "-o {xezim_artifact}",
                "-uvm",
                "-timescale {timescale}",
