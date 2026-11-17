@@ -214,6 +214,7 @@
           --simulate
           --relax-implicit-static
           --relax-driver-conflicts
+          --relax-cross-hier-item
           --error-exit
           --max-time 10s
           -f <tb_dir>/xezim_args.f
