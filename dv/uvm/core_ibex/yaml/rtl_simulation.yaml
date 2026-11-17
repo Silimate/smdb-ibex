@@ -219,7 +219,7 @@
           --max-time 10s
           -f <tb_dir>/xezim_args.f
           --dpi-lib <tb_dir>/xezim_cosim_dpi.so
-          -sv_seed <seed>
+          +seed=<seed>
           +UVM_TESTNAME=<rtl_test>
           +UVM_VERBOSITY=UVM_LOW
           +bin=<binary>

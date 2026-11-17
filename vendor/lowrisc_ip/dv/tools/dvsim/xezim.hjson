@@ -17,7 +17,7 @@
 
   run_opts:   ["{xezim_artifact}",
                "--error-exit --max-time 10s",
-               "-sv_seed {seed}",
+               "+seed={svseed}",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
 
