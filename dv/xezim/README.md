@@ -22,7 +22,5 @@ Requires `fusesoc`, the RV32 toolchain, and Spike development packages.
 | Bench | Entry |
 |-------|--------|
 | `tb_cs_registers` | `fusesoc --cores-root=. run --target=sim --tool=xezim lowrisc:ibex:tb_cs_registers` |
-| RISC-V compliance | `dv/riscv_compliance/scripts/run_compliance_config.sh <ibex_config> <riscv-compliance checkout>` |
 | icache UVM | `dvsim dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson -t xezim -i <test>` |
-| Simple-system Spike cosim | `examples/simple_system/xezim/scripts/run_cosim.sh <ibex_config> [[--skip-pass-check] <test> <elf>]` |
 | core_ibex UVM | `make -C dv/uvm/core_ibex SIMULATOR=xezim ...` |

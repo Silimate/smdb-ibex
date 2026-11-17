@@ -4,10 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Run an elf against simple system co-simulation and check the UART output for
-# reported pass/fail reporting as appropriate for use in GitHub Actions.
-# SIMPLE_SYSTEM_SIM overrides the simulator, which takes --meminit=ram,<elf>.
+# reported pass/fail reporting as appropriate for use in GitHub Actions
 
-SIMPLE_SYSTEM_SIM=${SIMPLE_SYSTEM_SIM:-build/lowrisc_ibex_ibex_simple_system_cosim_0/sim-verilator/Vibex_simple_system}
 SKIP_PASS_CHECK=0
 
 if [ $# -eq 3 ]; then
@@ -26,7 +24,7 @@ else
 fi
 
 echo "Running $TEST_NAME with co-simulation"
-$SIMPLE_SYSTEM_SIM --meminit=ram,$TEST_ELF
+build/lowrisc_ibex_ibex_simple_system_cosim_0/sim-verilator/Vibex_simple_system --meminit=ram,$TEST_ELF
 if [ $? != 0 ]; then
   echo "::error::Running % failed co-simulation testing"
   exit 1
