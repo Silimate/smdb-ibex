@@ -1994,3 +1994,31 @@ class core_ibex_assorted_traps_interrupts_debug_test extends core_ibex_directed_
    endtask
 
 endclass
+
+// Sends debug requests (+enable_debug_seq=1) or interrupts (+enable_irq_single_seq=1) at random
+// times while a directed test runs, and drops each interrupt after a short time. The program's
+// handlers only return, and the program checks its own results.
+class core_ibex_directed_stress_test extends core_ibex_base_test;
+
+  `uvm_component_utils(core_ibex_directed_stress_test)
+  `uvm_component_new
+
+  virtual task send_stimulus();
+    fork
+      vseq.start(env.vseqr);
+      begin
+        clk_vif.wait_clks(stimulus_delay);
+        if (cfg.enable_debug_seq) vseq.start_debug_stress_seq();
+      end
+      begin
+        clk_vif.wait_clks(stimulus_delay);
+        while (cfg.enable_irq_single_seq && !test_done) begin
+          vseq.start_irq_raise_single_seq(.no_nmi(1'b1));
+          clk_vif.wait_clks($urandom_range(5, 50));
+          vseq.start_irq_drop_seq();
+        end
+      end
+    join_none
+  endtask
+
+endclass

@@ -31,9 +31,11 @@ module ibex_controller #(
 
   // instr from IF-ID pipeline stage
   input  logic                  instr_valid_i,           // instr is valid
+  input  logic                  dummy_instr_id_i,        // instr in ID is a dummy
   input  logic [31:0]           instr_i,                 // uncompressed instr data for mtval
   input  logic [15:0]           instr_compressed_i,      // instr compressed data for mtval
   input  logic                  instr_is_compressed_i,   // instr is compressed
+  input  ibex_pkg::instr_exp_e  instr_gets_expanded_i,   // instr expansion state
   input  logic                  instr_bp_taken_i,        // instr was predicted taken branch
   input  logic                  instr_fetch_err_i,       // instr has error
   input  logic                  instr_fetch_err_plus2_i, // instr error is x32
@@ -378,7 +380,9 @@ module ibex_controller #(
   // single step mode. The first valid instruction on debug mode entry will clear it. Hold its value
   // when there is no valid instruction so `do_single_step_d` remains asserted until debug mode is
   // entered.
-  assign do_single_step_d = instr_valid_i ? ~debug_mode_q & debug_single_step_i : do_single_step_q;
+  // A dummy instruction is valid in ID but must not complete a step, so it holds the value.
+  assign do_single_step_d = (instr_valid_i & ~dummy_instr_id_i) ?
+                                ~debug_mode_q & debug_single_step_i : do_single_step_q;
   // Enter debug mode due to:
   // * external `debug_req_i`
   // * core in single step mode (dcsr.step == 1).
@@ -389,8 +393,11 @@ module ibex_controller #(
   // interrupt. `trigger_match_i` is not a priority entry into debug mode as it must be ignored
   // where control flow changes such that the instruction causing the trigger is no longer being
   // executed.
-  assign enter_debug_mode_prio_d = (debug_req_i | do_single_step_d) & ~debug_mode_q;
-  assign enter_debug_mode = enter_debug_mode_prio_d | (trigger_match_i & ~debug_mode_q);
+  // We don't interrupt expanded Zcmp sequences with debug mode entry.
+  assign enter_debug_mode_prio_d = (debug_req_i | do_single_step_d) & ~debug_mode_q &
+      !(instr_gets_expanded_i inside {INSTR_EXPANDED, INSTR_EXPANDED_COMMIT});
+  assign enter_debug_mode = enter_debug_mode_prio_d | (trigger_match_i & ~debug_mode_q) &
+      !(instr_gets_expanded_i inside {INSTR_EXPANDED, INSTR_EXPANDED_COMMIT});
 
   // Set when an ebreak should enter debug mode rather than jump to exception
   // handler
@@ -410,8 +417,10 @@ module ibex_controller #(
   // - while in NMI mode (nested NMIs are not supported, NMI has highest priority and
   //   cannot be interrupted by regular interrupts),
   // - while single stepping.
+  // - while the atomic committing instructions of a Zcmp sequence.
   assign handle_irq = ~debug_mode_q & ~debug_single_step_i & ~nmi_mode_q &
-      (irq_nm | (irq_pending_i & irq_enabled));
+      (irq_nm | (irq_pending_i & irq_enabled)) &
+      !(instr_gets_expanded_i == INSTR_EXPANDED_COMMIT);
 
   // generate ID of fast interrupts, highest priority to lowest ID
   always_comb begin : gen_mfip_id
