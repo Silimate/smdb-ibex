@@ -93,6 +93,9 @@ export METADATA-DIR := $(OUT-DIR)metadata
 
 # riscv-dv extension directory
 export EXT_DIR             := riscv_dv_extension
+# Include directories for the xezim entry in yaml/riscv_dv_simulator.yaml
+export IBEX_GEN_SETTING    ?= $(abspath $(EXT_DIR))
+export IBEX_GEN_USER_EXT   ?= $(abspath $(EXT_DIR))
 
 ###############################################################################
 
