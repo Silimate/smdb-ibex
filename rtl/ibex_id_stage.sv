@@ -35,10 +35,12 @@ module ibex_id_stage #(
 
   // Interface to IF stage
   input  logic                      instr_valid_i,
+  input  logic                      dummy_instr_id_i,      // instr in ID is a dummy
   input  logic [31:0]               instr_rdata_i,         // from IF-ID pipeline registers
   input  logic [31:0]               instr_rdata_alu_i,     // from IF-ID pipeline registers
   input  logic [15:0]               instr_rdata_c_i,       // from IF-ID pipeline registers
   input  logic                      instr_is_compressed_i,
+  input  ibex_pkg::instr_exp_e      instr_gets_expanded_i,
   input  logic                      instr_bp_taken_i,
   output logic                      instr_req_o,
   output logic                      instr_first_cycle_id_o,
@@ -564,9 +566,11 @@ module ibex_id_stage #(
 
     // from IF-ID pipeline
     .instr_valid_i          (instr_valid_i),
+    .dummy_instr_id_i       (dummy_instr_id_i),
     .instr_i                (instr_rdata_i),
     .instr_compressed_i     (instr_rdata_c_i),
     .instr_is_compressed_i  (instr_is_compressed_i),
+    .instr_gets_expanded_i  (instr_gets_expanded_i),
     .instr_bp_taken_i       (instr_bp_taken_i),
     .instr_fetch_err_i      (instr_fetch_err_i),
     .instr_fetch_err_plus2_i(instr_fetch_err_plus2_i),
@@ -1078,7 +1082,8 @@ module ibex_id_stage #(
   // Signal which instructions to count as retired in minstret, all traps along with ebrk and
   // ecall instructions are not counted.
   assign instr_perf_count_id_o = ~ebrk_insn & ~ecall_insn_dec & ~illegal_insn_dec &
-      ~illegal_csr_insn_i & ~instr_fetch_err_i;
+      ~illegal_csr_insn_i & ~instr_fetch_err_i &
+      !(instr_gets_expanded_i inside {INSTR_EXPANDED, INSTR_EXPANDED_COMMIT});
 
   // An instruction is ready to move to the writeback stage (or retire if there is no writeback
   // stage)
