@@ -48,6 +48,10 @@ module core_ibex_tb_top;
     `define IBEX_CFG_RV32B ibex_pkg::RV32BNone
   `endif
 
+  `ifndef IBEX_CFG_RV32ZC
+    `define IBEX_CFG_RV32ZC ibex_pkg::RV32ZcaZcbZcmp
+  `endif
+
   `ifndef IBEX_CFG_RegFile
     `define IBEX_CFG_RegFile ibex_pkg::RegFileFF
   `endif
@@ -61,6 +65,7 @@ module core_ibex_tb_top;
   parameter bit RV32E                     = 1'b0;
   parameter ibex_pkg::rv32m_e RV32M       = `IBEX_CFG_RV32M;
   parameter ibex_pkg::rv32b_e RV32B       = `IBEX_CFG_RV32B;
+  parameter ibex_pkg::rv32zc_e RV32ZC     = `IBEX_CFG_RV32ZC;
   parameter ibex_pkg::regfile_e RegFile   = `IBEX_CFG_RegFile;
   parameter bit BranchTargetALU           = 1'b0;
   parameter bit WritebackStage            = 1'b0;
@@ -101,6 +106,7 @@ module core_ibex_tb_top;
     .RV32E            (RV32E            ),
     .RV32M            (RV32M            ),
     .RV32B            (RV32B            ),
+    .RV32ZC           (RV32ZC           ),
     .RegFile          (RegFile          ),
     .BranchTargetALU  (BranchTargetALU  ),
     .WritebackStage   (WritebackStage   ),
@@ -360,6 +366,7 @@ module core_ibex_tb_top;
     uvm_config_db#(bit)::set(null, "*", "RV32E", RV32E);
     uvm_config_db#(ibex_pkg::rv32m_e)::set(null, "*", "RV32M", RV32M);
     uvm_config_db#(ibex_pkg::rv32b_e)::set(null, "*", "RV32B", RV32B);
+    uvm_config_db#(ibex_pkg::rv32zc_e)::set(null, "*", "RV32ZC", RV32ZC);
 
     if (PMPEnable) begin
       uvm_config_db#(bit [31:0])::set(null, "*", "PMPNumRegions", PMPNumRegions);
