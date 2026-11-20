@@ -60,14 +60,19 @@ def add_configs_and_handwritten_directed_tests():
     PMPEnable: 1
   timeout_s: 300
 
+# The toolchain has no C library: syscalls.c provides printf and the string
+# functions, epmp_libc has the headers it includes and the 64-bit division
+# helpers its printf needs.
 - config: epmp-tests
   ld_script: ../../../../vendor/riscv-isa-sim/tests/mseccfg/mseccfg_test.ld
   includes: .
   gcc_opts: -march=rv32imc -O2 -I . -I ./. -I ../softfloat -I ../riscv -fno-builtin-printf
-            -fdata-sections -fno-section-anchors -DPRINTF_SUPPORTED=1
+            -fdata-sections -DPRINTF_SUPPORTED=1
+            -ffreestanding -isystem directed_tests/epmp_libc
             ../../../vendor/riscv-isa-sim/tests/mseccfg/crt.S
             ../../../vendor/riscv-isa-sim/tests/mseccfg/syscalls.c
-            -mcmodel=medany -static -nostdlib -nostartfiles -lm -lgcc
+            directed_tests/epmp_libc/udivmoddi3.c
+            -mcmodel=medany -static -nostdlib -nostartfiles
             -Wl,-M -Wl,-Map=link.log
   rtl_test: core_ibex_base_test
   rtl_params:
