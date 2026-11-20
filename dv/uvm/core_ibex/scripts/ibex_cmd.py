@@ -113,8 +113,13 @@ def get_isas_for_config(cfg: Config) -> Tuple[str, str]:
     if bitmanip_isa is None:
         raise ValueError(f'Unknown RV32B value ({cfg.rv32b}) in config YAML')
 
-    has_bitmanip = cfg.rv32b != 'ibex_pkg::RV32BNone'
-    toolchain_isa = base_isa + ('b' if has_bitmanip else '')
+    # Clang spells the draft v0.93 bitmanip extensions as zbe0p93 etc. and
+    # only accepts them with -menable-experimental-extensions (passed in
+    # riscvdv_interface.get_run_cmd()). A plain 'b' is the ratified Zba/Zbb/Zbs.
+    toolchain_isa = '_'.join([base_isa] +
+                             [ext[1:].lower() + '0p93' if ext.startswith('X')
+                              else ext.lower()
+                              for ext in bitmanip_isa])
 
     return (toolchain_isa, '_'.join([base_isa] + bitmanip_isa))
 
