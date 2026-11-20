@@ -31,10 +31,16 @@ def add_configs_and_handwritten_directed_tests():
 
 ##########################################################
 
+# Clang's integrated assembler rejects riscv-test-env's '.weak mtvec_handler'
+# followed by a test's '.global mtvec_handler', so these use GNU as, which
+# needs Zicsr/Zifencei spelled out and no longer knows the priv-spec 1.9.1 CSR
+# names some rv32mi tests use.
 - config: riscv-tests
   ld_script: link.ld
   includes: .
   gcc_opts: -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
+            -fno-integrated-as -march=rv32imc_zicsr_zifencei
+            -Dsptbr=satp -Dmbadaddr=mtval
             -I../../../vendor/riscv-test-env/
             -I../../../vendor/riscv-test-env/p/
             -I../../../vendor/riscv-tests/isa/macros/scalar/
