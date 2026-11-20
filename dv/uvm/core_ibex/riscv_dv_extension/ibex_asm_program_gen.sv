@@ -97,6 +97,9 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
     cfg.check_xstatus = 1'b0;
     instr_stream.push_back(".section .text");
     instr_stream.push_back(".globl _start");
+    // LLVM's .option norvc also clears Zcb/Zcmp and .option rvc restores only C, so restore the
+    // previous state with .option pop.
+    instr_stream.push_back(".option push");
     instr_stream.push_back(".option norvc");
     // 0x0 debug mode entry
     instr_stream.push_back("j debug_rom");
@@ -105,7 +108,7 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
     instr_stream.push_back("j debug_exception");
     // Align the start section to 0x80
     instr_stream.push_back(".align 7");
-    instr_stream.push_back(".option rvc");
+    instr_stream.push_back(".option pop");
     instr_stream.push_back("_start:");
   endfunction
 
