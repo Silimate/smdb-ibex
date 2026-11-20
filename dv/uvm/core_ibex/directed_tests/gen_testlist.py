@@ -31,10 +31,16 @@ def add_configs_and_handwritten_directed_tests():
 
 ##########################################################
 
+# Clang's integrated assembler rejects riscv-test-env's '.weak mtvec_handler'
+# followed by a test's '.global mtvec_handler', so these use GNU as, which
+# needs Zicsr/Zifencei spelled out and no longer knows the priv-spec 1.9.1 CSR
+# names some rv32mi tests use.
 - config: riscv-tests
   ld_script: link.ld
   includes: .
   gcc_opts: -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
+            -fno-integrated-as -march=rv32imc_zicsr_zifencei
+            -Dsptbr=satp -Dmbadaddr=mtval
             -I../../../vendor/riscv-test-env/
             -I../../../vendor/riscv-test-env/p/
             -I../../../vendor/riscv-tests/isa/macros/scalar/
@@ -54,14 +60,19 @@ def add_configs_and_handwritten_directed_tests():
     PMPEnable: 1
   timeout_s: 300
 
+# The toolchain has no C library: syscalls.c provides printf and the string
+# functions, epmp_libc has the headers it includes and the 64-bit division
+# helpers its printf needs.
 - config: epmp-tests
   ld_script: ../../../../vendor/riscv-isa-sim/tests/mseccfg/mseccfg_test.ld
   includes: .
   gcc_opts: -march=rv32imc -O2 -I . -I ./. -I ../softfloat -I ../riscv -fno-builtin-printf
-            -fdata-sections -fno-section-anchors -DPRINTF_SUPPORTED=1
+            -fdata-sections -DPRINTF_SUPPORTED=1
+            -ffreestanding -isystem directed_tests/epmp_libc
             ../../../vendor/riscv-isa-sim/tests/mseccfg/crt.S
             ../../../vendor/riscv-isa-sim/tests/mseccfg/syscalls.c
-            -mcmodel=medany -static -nostdlib -nostartfiles -lm -lgcc
+            directed_tests/epmp_libc/udivmoddi3.c
+            -mcmodel=medany -static -nostdlib -nostartfiles
             -Wl,-M -Wl,-Map=link.log
   rtl_test: core_ibex_base_test
   rtl_params:
