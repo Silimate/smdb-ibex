@@ -71,9 +71,9 @@ class RegressionMetadata(scripts_lib.testdata_cls):
     tests_and_counts: List[Tuple[str, int, TestType]] = field(default_factory=list)
     isa_ibex: Optional[str] = None
     isa_iss: Optional[str] = None
-    # Wall-clock limit for one RTL simulation. The default is short; slower
-    # simulators (xezim) need more, set RUN_RTL_TIMEOUT_S in the environment.
-    run_rtl_timeout_s: int = int(os.environ.get('RUN_RTL_TIMEOUT_S', 10))
+    # Wall-clock limit for one RTL simulation. Slower simulators (xezim) may
+    # need more; set RUN_RTL_TIMEOUT_S in the environment.
+    run_rtl_timeout_s: int = int(os.environ.get('RUN_RTL_TIMEOUT_S', 1800))
 
     # Files that control the regression, specify configurations, tests, etc
     ibex_configs                : pathlib.Path = field(init=False, compare=False, default_factory=pathlib.Path)
