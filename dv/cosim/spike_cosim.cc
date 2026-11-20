@@ -1125,7 +1125,7 @@ bool SpikeCosim::pc_is_load(uint32_t pc, uint32_t &rd_out) {
     return rd_out != 0;
   }
 
-  uint16_t insn_32;
+  uint32_t insn_32;
 
   if (!backdoor_read_mem(pc, 4, reinterpret_cast<uint8_t *>(&insn_32))) {
     return false;
