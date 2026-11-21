@@ -1205,6 +1205,8 @@
   gen_opts: >
     +enable_zcb_extension=1
   rtl_test: core_ibex_base_test
+  rtl_params:
+    RV32ZC: ["ibex_pkg::RV32ZcaZcb", "ibex_pkg::RV32ZcaZcbZcmp"]
 
 - test: riscv_zcmp_balanced_test
   desc: >
@@ -1215,6 +1217,8 @@
     +enable_zcb_extension=1
     +enable_zcmp_extension=1
   rtl_test: core_ibex_base_test
+  rtl_params:
+    RV32ZC: "ibex_pkg::RV32ZcaZcbZcmp"
 
 - test: riscv_zcmp_directed_test
   desc: >
@@ -1229,3 +1233,5 @@
     +num_of_sub_program=0
     +no_branch_jump=1
   rtl_test: core_ibex_base_test
+  rtl_params:
+    RV32ZC: "ibex_pkg::RV32ZcaZcbZcmp"
