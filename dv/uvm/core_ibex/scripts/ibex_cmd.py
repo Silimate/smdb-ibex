@@ -113,15 +113,29 @@ def get_isas_for_config(cfg: Config) -> Tuple[str, str]:
     if bitmanip_isa is None:
         raise ValueError(f'Unknown RV32B value ({cfg.rv32b}) in config YAML')
 
+    # Zca is named by the base 'c' letter.
+    zc_mapping = {
+        'ibex_pkg::RV32Zca': [],
+        'ibex_pkg::RV32ZcaZcb': ['Zcb'],
+        'ibex_pkg::RV32ZcaZcmp': ['Zcmp'],
+        'ibex_pkg::RV32ZcaZcbZcmp': ['Zcb', 'Zcmp']
+    }
+
+    zc_isa = zc_mapping.get(cfg.rv32zc)
+    if zc_isa is None:
+        raise ValueError(f'Unknown RV32ZC value ({cfg.rv32zc}) in config YAML')
+
+    extensions = ['Zicsr', 'Zifencei'] + bitmanip_isa + zc_isa
+
     # Clang spells the draft v0.93 bitmanip extensions as zbe0p93 etc. and
     # only accepts them with -menable-experimental-extensions (passed in
     # riscvdv_interface.get_run_cmd()). A plain 'b' is the ratified Zba/Zbb/Zbs.
     toolchain_isa = '_'.join([base_isa] +
                              [ext[1:].lower() + '0p93' if ext.startswith('X')
                               else ext.lower()
-                              for ext in bitmanip_isa])
+                              for ext in extensions])
 
-    return (toolchain_isa, '_'.join([base_isa] + bitmanip_isa))
+    return (toolchain_isa, '_'.join([base_isa] + extensions))
 
 
 _TestEntry = Dict[str, object]

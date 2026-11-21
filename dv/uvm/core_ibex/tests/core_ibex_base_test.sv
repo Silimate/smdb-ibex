@@ -74,6 +74,8 @@ class core_ibex_base_test extends uvm_test;
     isa = {"rv32", RV32E ? "e" : "i"};
     if (RV32M != RV32MNone) isa = {isa, "m"};
     isa = {isa, "c"};
+    isa = {isa, "_Zicsr"};
+    isa = {isa, "_Zifencei"};
     case (RV32B)
       RV32BNone:
         ;
