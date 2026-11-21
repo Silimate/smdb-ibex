@@ -122,9 +122,8 @@ In order to run the co-simulation flow, you'll need:
 
 - A working RISC-V toolchain (to compile / assemble the generated programs before simulating them).
 
-  Either download a `pre-built toolchain <riscv-toolchain-releases_>`_ (quicker) or download and build the `RISC-V GNU compiler toolchain <riscv-toolchain-source_>`_.
-  For the latter, the Bitmanip patches have to be manually installed to enable support for the Bitmanip draft extension.
-  For further information, checkout the `Bitmanip Extension on GitHub <bitmanip_>`_ and `how we create the pre-built toolchains <bitmanip-patches_>`_.
+  Download the `pre-built lowRISC toolchain <riscv-toolchain-releases_>`_ (``lowrisc-toolchain-rv32imcb``, the version in ``ci/vars.env``).
+  It provides Clang with the draft Bitmanip extensions (see the `Bitmanip Extension on GitHub <bitmanip_>`_) and GNU binutils.
 
 Once these are installed, you need to set some environment variables
 to tell the RISCV-DV code where to find them:
@@ -132,15 +131,13 @@ to tell the RISCV-DV code where to find them:
 ::
 
     export RISCV_TOOLCHAIN=/path/to/riscv
-    export RISCV_GCC="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-gcc"
+    export RISCV_GCC="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-clang"
     export RISCV_OBJCOPY="$RISCV_TOOLCHAIN/bin/riscv32-unknown-elf-objcopy"
     export SPIKE_PATH=/path/to/spike/bin
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/path/to/spike/lib/pkgconfig
 
 .. _LRSpike: https://github.com/lowRISC/riscv-isa-sim
-.. _riscv-toolchain-source: https://github.com/riscv/riscv-gnu-toolchain
 .. _riscv-toolchain-releases: https://github.com/lowRISC/lowrisc-toolchains/releases
-.. _bitmanip-patches: https://github.com/lowRISC/lowrisc-toolchains#how-to-generate-the-bitmanip-patch
 .. _bitmanip: https://github.com/riscv/riscv-bitmanip
 
 End-to-end RTL/ISS co-simulation flow

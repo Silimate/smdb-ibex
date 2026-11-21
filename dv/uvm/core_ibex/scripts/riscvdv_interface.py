@@ -47,7 +47,7 @@ def get_run_cmd(verbose: bool, simulator: str = '') -> List[Union[str, pathlib.P
     cmd = ['python3',
            riscvdv_run_py,
            '--testlist', testlist,
-           '--gcc_opts=-mno-strict-align',
+           '--gcc_opts=-mno-strict-align -menable-experimental-extensions',
            '--custom_target', _CORE_IBEX_RISCV_DV_EXTENSION,
            '--csr_yaml', csr_desc,
            '--mabi=ilp32']

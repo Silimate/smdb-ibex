@@ -20,10 +20,10 @@ export SPIKE_PATH=$SPIKE_INSTALL_DIR/bin
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$SPIKE_INSTALL_DIR/lib/pkgconfig
 ```
 
-You will need the [RISC-V toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
+You will need the [lowRISC RISC-V toolchain](https://github.com/lowRISC/lowrisc-toolchains/releases) (`lowrisc-toolchain-rv32imcb`, the version in `ci/vars.env`), which provides Clang with the draft bitmanip extensions and GNU binutils.
 You'll need to add this to your path and then also set the following environment variables:
 ```bash
-export RISCV_GCC=riscv32-unknown-elf-gcc
+export RISCV_GCC=riscv32-unknown-elf-clang
 export RISCV_OBJCOPY=riscv32-unknown-elf-objcopy
 ```
 

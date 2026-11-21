@@ -459,6 +459,7 @@ class riscv_asm_program_gen extends uvm_object;
         RV32X, RV64X         : misa[MISA_EXT_X] = 1'b1;
         RV32ZBA, RV32ZBB, RV32ZBC, RV32ZBS,
         RV64ZBA, RV64ZBB, RV64ZBC, RV64ZBS : ; // No Misa bit for Zb* extensions
+        RV32ZCB, RV64ZCB, RV32ZCMP, RV64ZCMP : ; // No Misa bit for Zc* extensions
         default : `uvm_fatal(`gfn, $sformatf("%0s is not yet supported",
                                    supported_isa[i].name()))
       endcase
@@ -1123,15 +1124,15 @@ class riscv_asm_program_gen extends uvm_object;
     // software interrupts, are vectored to the same location as synchronous exceptions. This
     // ambiguity does not arise in practice, since user-mode software interrupts are either
     // disabled or delegated
-    instr = {instr, ".option norvc;",
+    // LLVM's .option norvc also clears Zcb/Zcmp and .option rvc restores only C, so restore the
+    // previous state with .option pop.
+    instr = {instr, ".option push;", ".option norvc;",
                     $sformatf("j %0s%0smode_exception_handler", hart_prefix(hart), mode)};
     // Redirect the interrupt to the corresponding interrupt handler
     for (int i = 1; i < max_interrupt_vector_num; i++) begin
       instr.push_back($sformatf("j %0s%0smode_intr_vector_%0d", hart_prefix(hart), mode, i));
     end
-    if (!cfg.disable_compressed_instr) begin
-      instr = {instr, ".option rvc;"};
-    end
+    instr = {instr, ".option pop;"};
     for (int i = 1; i < max_interrupt_vector_num; i++) begin
       string intr_handler[$];
       push_gpr_to_kernel_stack(status, scratch, cfg.mstatus_mprv, cfg.sp, cfg.tp, intr_handler);
