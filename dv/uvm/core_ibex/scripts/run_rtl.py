@@ -37,7 +37,10 @@ def _main() -> int:
         testopts = trr.directed_data
 
     trr.rtl_test = testopts['rtl_test']
-    trr.timeout_s = testopts.get('timeout_s') or md.run_rtl_timeout_s
+    timeout_scale = riscvdv_interface.get_timeout_scale(
+        md.ibex_riscvdv_simulator_yaml, md.simulator)
+    trr.timeout_s = int((testopts.get('timeout_s') or md.run_rtl_timeout_s) * timeout_scale)
+    kill_timeout_s = int(md.run_rtl_timeout_s * timeout_scale) + 60
 
     # Each test in testlist.yaml can (optionally) specify 'sim_opts'
     # which are to be passed to the simulator when running the test.
@@ -106,12 +109,12 @@ def _main() -> int:
                 sim_fd.write(f"Running run-rtl command :\n{' '.join(cmd)}\n".encode())
                 run_one(md.verbose, cmd,
                         redirect_stdstreams=sim_fd,
-                        timeout_s=md.run_rtl_timeout_s+60,  # Ideally we time-out inside the simulation
+                        timeout_s=kill_timeout_s,  # Ideally we time-out inside the simulation
                         reraise=True)  # Allow us to catch timeout exceptions at this level
         except subprocess.TimeoutExpired:
             trr.failure_mode = Failure_Modes.TIMEOUT
             trr.failure_message = "[FAILURE] Simulation process killed due to timeout " \
-                                 f"[{md.run_rtl_timeout_s+60}s].\n"
+                                 f"[{kill_timeout_s}s].\n"
 
     trr.export(write_yaml=True)
     # Always return 0 (success), even if the test failed. We've successfully

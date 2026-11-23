@@ -185,6 +185,9 @@
 # (Spike's riscv-* .pc files), plus the usual RISCV_* toolchain variables.
 - tool: xezim
   env_var: XEZIM,XEZIM_INCLUDE,IBEX_ROOT,EXTRA_COSIM_CFLAGS
+  # Multiplies every test timeout and the process kill timeout; the defaults
+  # assume a commercial simulator's speed.
+  timeout_scale: 4
   compile:
     cmd:
       - >-

@@ -172,6 +172,11 @@ def get_tool_cmds(yaml_path: pathlib.Path,
 
 
 @typechecked
+def get_timeout_scale(yaml_path: pathlib.Path, simulator: str) -> float:
+    """Return the simulator's 'timeout_scale' from the RTL simulation yaml (default 1)."""
+    return float(_get_yaml_for_simulator(yaml_path, simulator).get('timeout_scale', 1))
+
+
 def _get_yaml_for_simulator(yaml_path: pathlib.Path, simulator: str) -> dict:
     """Get the entry for the simulator in RTL simulation yaml.
 
