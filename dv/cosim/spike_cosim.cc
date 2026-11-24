@@ -359,7 +359,7 @@ bool SpikeCosim::check_expanded_instr(uint32_t write_reg,
       // This is the first and last instruction. This should never happen with
       // the currently supported expanded instructions
       std::stringstream err_str;
-      err_str << "Error: PC 0x" << std::hex << dut_pc
+      err_str << "PC 0x" << std::hex << dut_pc
               << ": First and last expanded instruction set simultaneously. "
                  "This should never happen.";
       errors.emplace_back(err_str.str());
@@ -372,7 +372,7 @@ bool SpikeCosim::check_expanded_instr(uint32_t write_reg,
   // Verify that the PC didn't change
   if (dut_pc != expanded_insn_pc) {
     std::stringstream err_str;
-    err_str << "Error: PC 0x" << std::hex << dut_pc
+    err_str << "PC 0x" << std::hex << dut_pc
             << ": PC changed during expanded instruction. Expected 0x"
             << std::hex << expanded_insn_pc;
     errors.emplace_back(err_str.str());
