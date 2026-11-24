@@ -99,6 +99,7 @@ class SpikeCosim : public simif_t, public Cosim {
   void misaligned_pmp_fixup();
 
   unsigned int insn_cnt;
+  uint32_t mhpm_counter_num;
 
   // Handle expanded instructions
   // Set to one once we start processing an expanded instruction. Used to track
