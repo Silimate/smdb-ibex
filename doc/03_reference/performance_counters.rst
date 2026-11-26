@@ -74,7 +74,7 @@ Access to the U-mode counter aliases (``cycle(h)``, ``instret(h)``, and ``hpmcou
 
 When a bit in ``mcounteren`` is clear (0), any attempt to read the corresponding counter alias from U-mode will trigger an illegal instruction exception.
 
-To secure this mechanism, the ``mcounteren`` register can be locked against software modifications using a MUBI input signal called ``mcounteren_writable_i``. When this signal disables writes, any attempt by software to modify the contents of ``mcounteren`` is ignored.
+To secure this mechanism, the ``mcounteren`` register can be locked against software modifications using a MUBI input signal called ``mcounteren_writeable``. When this signal disables writes, any attempt by software to modify the contents of ``mcounteren`` is ignored.
 
 Parametrization at synthesis time
 ---------------------------------
