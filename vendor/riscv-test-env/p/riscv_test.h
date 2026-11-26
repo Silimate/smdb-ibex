@@ -191,8 +191,10 @@ handle_exception:                                                       \
         /* some unhandlable exception occurred */                       \
   1:    ori TESTNUM, TESTNUM, 1337;                                     \
   write_tohost:                                                         \
-        sw TESTNUM, tohost, t5;                                         \
-        j write_tohost;                                                 \
+        li t5, 1;                                                       \
+        bne TESTNUM, t5, 3f;                                            \
+        RVTEST_PASS;                                                    \
+  3:    RVTEST_FAIL;                                                    \
 reset_vector:                                                           \
         INIT_XREG;                                                      \
         RISCV_MULTICORE_DISABLE;                                        \

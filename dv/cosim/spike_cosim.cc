@@ -42,6 +42,7 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
     : nmi_mode(false),
       pending_iside_error(false),
       insn_cnt(0),
+      mhpm_counter_num(mhpm_counter_num),
       pending_expanded_insn(0) {
   FILE *log_file = nullptr;
   if (trace_log_path.length() != 0) {
@@ -358,7 +359,7 @@ bool SpikeCosim::check_expanded_instr(uint32_t write_reg,
       // This is the first and last instruction. This should never happen with
       // the currently supported expanded instructions
       std::stringstream err_str;
-      err_str << "Error: PC 0x" << std::hex << dut_pc
+      err_str << "PC 0x" << std::hex << dut_pc
               << ": First and last expanded instruction set simultaneously. "
                  "This should never happen.";
       errors.emplace_back(err_str.str());
@@ -371,7 +372,7 @@ bool SpikeCosim::check_expanded_instr(uint32_t write_reg,
   // Verify that the PC didn't change
   if (dut_pc != expanded_insn_pc) {
     std::stringstream err_str;
-    err_str << "Error: PC 0x" << std::hex << dut_pc
+    err_str << "PC 0x" << std::hex << dut_pc
             << ": PC changed during expanded instruction. Expected 0x"
             << std::hex << expanded_insn_pc;
     errors.emplace_back(err_str.str());
@@ -851,6 +852,22 @@ void SpikeCosim::misaligned_pmp_fixup() {
                   << top_pending_access_info.addr << std::endl;
         std::cout << std::dec;
 
+        // Ibex has done this store but Spike has not, so write the bytes the
+        // testbench memory accepted (it ignores stores with an error response).
+        if (top_pending_access_info.store && !top_pending_access_info.error) {
+          for (unsigned i = 0; i < 4; ++i) {
+            if (top_pending_access_info.be & (1u << i)) {
+              uint8_t mirror_byte = top_pending_access_info.data >> (8 * i);
+              if (!backdoor_write_mem(top_pending_access_info.addr + i, 1,
+                                      &mirror_byte)) {
+                errors.emplace_back(
+                    "Failed to mirror dropped misaligned store beat");
+                return;
+              }
+            }
+          }
+        }
+
         pending_dside_accesses.erase(pending_dside_accesses.begin());
       }
     }
@@ -1007,6 +1024,19 @@ void SpikeCosim::fixup_csr(int csr_num, uint32_t csr_val) {
     case CSR_MISA: {
       // For Ibex, misa is hardwired
       reg_t new_val = 0x40901104;
+#ifdef OLD_SPIKE
+      processor->set_csr(csr_num, new_val);
+#else
+      processor->put_csr(csr_num, new_val);
+#endif
+      break;
+    }
+    case CSR_MCOUNTEREN: {
+      // Bits 3..3+mhpm_counter_num-1 correspond to implemented HPM counters
+      reg_t hpm_mask = ((1 << mhpm_counter_num) - 1) << 3;
+      // Bit 0 and 2 are for mcycle and minstret which are always implemented
+      // Bit 1 is for time which is not implemented, hence the mask 0x5
+      reg_t new_val = csr_val & (0x5 | hpm_mask);
 #ifdef OLD_SPIKE
       processor->set_csr(csr_num, new_val);
 #else
@@ -1231,8 +1261,10 @@ bool SpikeCosim::pc_is_debug_ebreak(uint32_t pc) {
   // ebreak debug entry is controlled by the ebreakm (bit 15) and ebreaku (bit
   // 12) fields of DCSR. If the appropriate bit of the current privilege level
   // isn't set ebreak won't enter debug so return false.
-  if (((processor->get_state()->prv == PRV_M) && ((dcsr & 0x1000) == 0)) ||
-      ((processor->get_state()->prv == PRV_U) && ((dcsr & 0x8000) == 0))) {
+  if (((processor->get_state()->prv == PRV_M) &&
+       ((dcsr & DCSR_EBREAKM) == 0)) ||
+      ((processor->get_state()->prv == PRV_U) &&
+       ((dcsr & DCSR_EBREAKU) == 0))) {
     return false;
   }
 

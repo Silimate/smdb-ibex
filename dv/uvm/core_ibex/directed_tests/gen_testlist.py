@@ -143,6 +143,23 @@ def add_configs_and_handwritten_directed_tests():
     RV32ZC: ["ibex_pkg::RV32ZcaZcmp", "ibex_pkg::RV32ZcaZcbZcmp"]
   sim_opts: +disable_cosim=1 +enable_irq_single_seq=1
 
+- test: mcounteren_test
+  desc: >
+    Tests the mcounteren CSR: reset value, hardwired-zero bit 1 (time),
+    and U-mode counter access gating.
+  iterations: 1
+  test_srcs: mcounteren_test/mcounteren_test.S
+  config: riscv-tests
+
+- test: mcounteren_lock_test
+  desc: >
+    Tests that mcounteren retains its value after mcounteren_writable_i is
+    de-asserted mid-simulation (write-lock).
+  iterations: 1
+  rtl_test: core_ibex_mcounteren_lock_test
+  test_srcs: mcounteren_test/mcounteren_lock_test.S
+  config: riscv-tests
+
 - test: pmp_mseccfg_test_rlb1_l0_0_u0
   desc: >
     mseccfg test
@@ -468,6 +485,20 @@ def add_configs_and_handwritten_directed_tests():
   iterations: 1
   test_srcs: u_mode_exec_test/u_mode_exec_test.S
   config: riscv-tests
+
+- test: top_of_memory_test
+  desc: >
+    Store and load at the last word of the address space
+  iterations: 1
+  test_srcs: top_of_memory_test/top_of_memory_test.S
+  config: riscv-tests
+
+- test: pmp_misaligned_store_test
+  desc: >
+    Misaligned store whose first half fails PMP
+  iterations: 1
+  test_srcs: pmp_misaligned_store_test/pmp_misaligned_store_test.S
+  config: riscv-tests
 '''
     testlist_string += available_directed_tests
     with open('directed_testlist.yaml', "a") as f:
@@ -532,11 +563,11 @@ def _main() -> int:
     add_configs_and_handwritten_directed_tests()
 
     if 'riscv-tests' in test_suite_list or test_suite == 'all':
-        isa_tests = {'rv32mi', 'rv32uc', 'rv32ui', 'rv32um'}
+        isa_tests = ['rv32mi', 'rv32uc', 'rv32um', 'rv32ui']
         append_directed_testlist(isa_tests, '../../../../vendor/riscv-tests/isa/', 'riscv-tests', 1)
 
     if 'riscv-arch-tests' in test_suite_list or test_suite == 'all':
-        arch_tests = {'rv32i_m/B/src', 'rv32i_m/C/src', 'rv32i_m/I/src', 'rv32i_m/M/src', 'rv32i_m/Zifencei/src'}
+        arch_tests = ['rv32i_m/M/src', 'rv32i_m/C/src', 'rv32i_m/Zifencei/src', 'rv32i_m/I/src', 'rv32i_m/B/src']
         append_directed_testlist(arch_tests, '../../../../vendor/riscv-arch-tests/riscv-test-suite/', 'riscv-arch-tests', 1)
 
     if 'epmp-tests' in test_suite_list or test_suite == 'all':
